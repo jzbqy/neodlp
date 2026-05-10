@@ -52,14 +52,10 @@ jobs:
         shell: pwsh
         run: |
             if (Test-Path "CHANGELOG.md") {
-                # Extract version number from tag
                 $version_num = "${{ inputs.tag_name || github.ref_name }}" -replace '^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$','$1'
-
-                # Read and replace placeholders
                 $content = Get-Content -Path CHANGELOG.md -Raw
                 $content = $content -replace '<release_tag>', "${{ inputs.tag_name || github.ref_name }}"
                 $content = $content -replace '<version>', "$version_num"
-
                 "content<<EOF" >> $env:GITHUB_OUTPUT
                 $content >> $env:GITHUB_OUTPUT
                 "EOF" >> $env:GITHUB_OUTPUT
@@ -67,7 +63,8 @@ jobs:
                 "content=No changelog found" >> $env:GITHUB_OUTPUT
             }
 
-      - name: 🚀 Build and publish
+      - name: 🚀 Build with Tauri
+        id: tauri_build
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -94,3 +91,67 @@ jobs:
           prerelease: true
           includeUpdaterJson: false
           args: ${{ matrix.args }}
+
+      - name: 📦 Create Portable Version
+        id: create_portable
+        shell: pwsh
+        run: |
+            # Get version without v prefix
+            $tagName = "${{ inputs.tag_name || github.ref_name }}".TrimStart('v')
+            $productName = "NeoDLP"
+            $portableZipName = "${productName}_${tagName}_x64-portable.zip"
+            $portableZipPath = Join-Path -Path $env:GITHUB_WORKSPACE -ChildPath $portableZipName
+            
+            Write-Host "Looking for build artifacts..."
+            
+            $bundleDirs = @(Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release/bundle" -Recurse -Directory -ErrorAction SilentlyContinue)
+            
+            if ($bundleDirs) {
+                Write-Host "Found bundle dir: $($bundleDirs[0].FullName)"
+                
+                # Find the MSI or NSIS directory
+                $bundlePath = $null
+                
+                # Try to find the main exe in any bundle folder
+                $bundleExe = Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release" -Filter "neodlp.exe" -ErrorAction SilentlyContinue
+                
+                if ($bundleExe) {
+                    Write-Host "Found main exe: $($bundleExe.FullName)"
+                    
+                    # Create a temporary folder for portable build
+                    $portableDir = Join-Path -Path $env:RUNNER_TEMP -ChildPath "neodlp-portable"
+                    New-Item -ItemType Directory -Path $portableDir -Force
+                    
+                    # Copy all files
+                    Copy-Item -Path "src-tauri/target/x86_64-pc-windows-msvc/release" -Destination $portableDir -Recurse
+                    
+                    Write-Host "Created portable directory: $portableDir"
+                    Get-ChildItem -Path $portableDir -Recurse
+                    
+                    Compress-Archive -Path "$portableDir\*" -DestinationPath $portableZipPath -Force
+                    
+                    if (Test-Path $portableZipPath) {
+                        Write-Host "Portable zip created successfully at: $portableZipPath"
+                        "portable_zip_path=$portableZipPath" >> $env:GITHUB_OUTPUT
+                        "portable_zip_name=$portableZipName" >> $env:GITHUB_OUTPUT
+                    } else {
+                        Write-Host "Failed to create portable zip"
+                    }
+                }
+            }
+
+      - name: 📤 Upload Portable Zip to Release
+        if: steps.create_portable.outputs.portable_zip_path
+        shell: pwsh
+        run: |
+            $zipPath = "${{ steps.create_portable.outputs.portable_zip_path }}"
+            $zipName = "${{ steps.create_portable.outputs.portable_zip_name }}"
+            
+            if (Test-Path $zipPath) {
+                Write-Host "Uploading portable zip to release..."
+                
+                # Use gh CLI to upload
+                gh release upload "${{ inputs.tag_name || github.ref_name }}" "$zipPath" --repo "${{ github.repository }}"
+            }
+        env:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
