@@ -1,0 +1,95 @@
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Draft release tag (e.g. v0.4.5-chinese)'
+        required: true
+        default: 'v0.0.0-chinese'
+
+name: 🪟 Windows Only Build
+jobs:
+  release:
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: 'windows-latest'
+            target_platform: 'win32'
+            target_arch: 'x64'
+            args: '--target x86_64-pc-windows-msvc --config ./src-tauri/tauri.windows-x86_64.conf.json'
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: 🚚 Checkout repository
+        uses: actions/checkout@v5
+
+      - name: 📦 Setup node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 'lts/*'
+          cache: 'npm'
+
+      - name: 🛠️ install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 🛠️ Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: './src-tauri -> target'
+
+      - name: 🛠️ Install frontend dependencies
+        run: npm install
+
+      - name: 📥 Download binaries
+        run: npm run download -- ${{ matrix.target_platform }} ${{ matrix.target_arch }}
+
+      - name: 📄 Read and Process CHANGELOG (Windows)
+        id: changelog_windows
+        shell: pwsh
+        run: |
+            if (Test-Path "CHANGELOG.md") {
+                # Extract version number from tag
+                $version_num = "${{ inputs.tag_name || github.ref_name }}" -replace '^v([0-9]+\.[0-9]+\.[0-9]+)(-.*)?$','$1'
+
+                # Read and replace placeholders
+                $content = Get-Content -Path CHANGELOG.md -Raw
+                $content = $content -replace '<release_tag>', "${{ inputs.tag_name || github.ref_name }}"
+                $content = $content -replace '<version>', "$version_num"
+
+                "content<<EOF" >> $env:GITHUB_OUTPUT
+                $content >> $env:GITHUB_OUTPUT
+                "EOF" >> $env:GITHUB_OUTPUT
+            } else {
+                "content=No changelog found" >> $env:GITHUB_OUTPUT
+            }
+
+      - name: 🚀 Build and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tagName: ${{ inputs.tag_name || github.ref_name }}
+          releaseName: ${{ github.event.repository.name }}-${{ inputs.tag_name || github.ref_name }}
+          releaseBody: |
+            # NeoDLP 中文版本
+            
+            这是包含中文支持的 NeoDLP 构建版本。
+            
+            ## 安装包
+            - **.exe** - NSIS 安装程序
+            - **.msi** - Windows Installer 安装程序
+            
+            ## 功能
+            - ✨ 内置中文支持
+            - 🌐 在设置中可以切换英文/中文
+            - 🎬 原有的所有功能保持不变
+            
+            ${{ steps.changelog_windows.outputs.content }}
+          releaseDraft: true
+          prerelease: true
+          includeUpdaterJson: false
+          args: ${{ matrix.args }}
