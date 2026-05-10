@@ -570,7 +570,7 @@ export interface Translation {
   commands: string;
   debug: string;
   info: string;
-};}
+}
 
 export const translations: Record<Language, Translation> = {
   en: {
