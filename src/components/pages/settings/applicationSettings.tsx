@@ -38,6 +38,7 @@ import neosubhamoyImage from "@/assets/images/neosubhamoy.jpg";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { NumberInput } from "@/components/custom/numberInput";
 import usePotServer from "@/helpers/use-pot-server";
+import { useI18n } from "@/i18n/i18nProvider";
 
 const proxyUrlSchema = z.object({
     url: z.url({
@@ -195,32 +196,38 @@ function AppGeneralSettings() {
 
 function AppAppearanceSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t, language, setLanguage } = useI18n();
 
     const appTheme = useSettingsPageStatesStore(state => state.settings.theme);
     const appColorScheme = useSettingsPageStatesStore(state => state.settings.color_scheme);
 
     const themeOptions: { value: string; icon: LucideIcon; label: string }[] = [
-        { value: 'light', icon: Sun, label: 'Light' },
-        { value: 'dark', icon: Moon, label: 'Dark' },
-        { value: 'system', icon: Monitor, label: 'System' },
+        { value: 'light', icon: Sun, label: t.light },
+        { value: 'dark', icon: Moon, label: t.dark },
+        { value: 'system', icon: Monitor, label: t.system },
     ];
 
     const colorSchemeOptions: { value: string; label: string }[] = [
-        { value: 'default', label: 'Default' },
-        { value: 'blue', label: 'Blue' },
-        { value: 'green', label: 'Green' },
-        { value: 'orange', label: 'Orange' },
-        { value: 'red', label: 'Red' },
-        { value: 'rose', label: 'Rose' },
-        { value: 'violet', label: 'Violet' },
-        { value: 'yellow', label: 'Yellow' },
+        { value: 'default', label: t.default },
+        { value: 'blue', label: t.blue },
+        { value: 'green', label: t.green },
+        { value: 'orange', label: t.orange },
+        { value: 'red', label: t.red },
+        { value: 'rose', label: t.rose },
+        { value: 'violet', label: t.violet },
+        { value: 'yellow', label: t.yellow },
+    ];
+
+    const languageOptions: { value: string; label: string }[] = [
+        { value: 'en', label: 'English' },
+        { value: 'zh-CN', label: '简体中文' },
     ];
 
     return (
         <>
         <div className="app-theme">
-            <h3 className="font-semibold">Theme</h3>
-            <p className="text-xs text-muted-foreground mb-3">Choose app interface theme</p>
+            <h3 className="font-semibold">{t.theme}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.chooseAppTheme}</p>
             <div className={cn('inline-flex gap-1 rounded-lg p-1 bg-muted')}>
                 {themeOptions.map(({ value, icon: Icon, label }) => (
                     <button
@@ -240,8 +247,8 @@ function AppAppearanceSettings() {
             </div>
         </div>
         <div className="app-color-scheme">
-            <h3 className="font-semibold">Color Scheme</h3>
-            <p className="text-xs text-muted-foreground mb-3">Choose app interface color scheme</p>
+            <h3 className="font-semibold">{t.colorScheme}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.chooseAppColorScheme}</p>
             <ToggleGroup
             type="single"
             variant="outline"
@@ -275,6 +282,30 @@ function AppAppearanceSettings() {
                             }
                             {label}
                             </span>
+                        </ToggleGroupItem>
+                    ))}
+                </div>
+            </ToggleGroup>
+        </div>
+        <div className="app-language mt-6">
+            <h3 className="font-semibold">{t.language}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.selectLanguage}</p>
+            <ToggleGroup
+            type="single"
+            variant="outline"
+            className="flex flex-col items-start gap-2 mt-1"
+            value={language}
+            onValueChange={(value) => setLanguage(value as any)}
+            >
+                <div className="flex gap-2 flex-wrap items-center">
+                    {languageOptions.map(({ value, label }) => (
+                        <ToggleGroupItem
+                            key={value}
+                            className="text-xs text-nowrap border-2 data-[state=on]:border-2 data-[state=on]:border-primary data-[state=on]:bg-primary/10 hover:bg-muted/70"
+                            size="sm"
+                            value={value}
+                        >
+                            {label}
                         </ToggleGroupItem>
                     ))}
                 </div>

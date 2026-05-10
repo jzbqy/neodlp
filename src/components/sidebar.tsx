@@ -17,8 +17,10 @@ import { Progress } from "@/components/ui/progress";
 import useAppUpdater from "@/helpers/use-app-updater";
 import { platform } from "@tauri-apps/plugin-os";
 import * as fs from "@tauri-apps/plugin-fs";
+import { useI18n } from "@/i18n/i18nProvider";
 
 export function AppSidebar() {
+    const { t } = useI18n();
     const downloadStates = useDownloadStatesStore(state => state.downloadStates);
     const ongoingDownloads = downloadStates.filter(state =>
         ['starting', 'downloading', 'queued'].includes(state.download_status)
@@ -36,13 +38,14 @@ export function AppSidebar() {
     const [showUpdateCard, setShowUpdateCard] = useState(false);
     const [isNativeLinuxApp, setIsNativeLinuxApp] = useState(false);
 
+    // Create translated route items
     const topItems: Array<RoutesObj> = [
-        AllRoutes[0], // Downloader
-        AllRoutes[1], // Library
+        { ...AllRoutes[0], title: t.downloader }, // Downloader
+        { ...AllRoutes[1], title: t.library }, // Library
     ];
 
     const bottomItems: Array<RoutesObj> = [
-        AllRoutes[2], // Settings
+        { ...AllRoutes[2], title: t.settings }, // Settings
     ];
 
     useEffect(() => {
