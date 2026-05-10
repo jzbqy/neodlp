@@ -10,8 +10,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { ExtensionSettings } from "@/components/pages/settings/extensionSettings";
 import { ApplicationSettings } from "@/components/pages/settings/applicationSettings";
 import usePotServer from "@/helpers/use-pot-server";
+import { useI18n } from "@/i18n/i18nProvider";
 
 export default function SettingsPage() {
+    const { t } = useI18n();
     const { setTheme } = useTheme();
 
     const activeTab = useSettingsPageStatesStore(state => state.activeTab);
@@ -34,12 +36,12 @@ export default function SettingsPage() {
 
     return (
         <div className="container mx-auto p-4 space-y-4 min-h-screen">
-            <Heading title="Settings" description="Manage your preferences and app settings" />
+            <Heading title={t.settingsTitle} description={t.settingsDescription} />
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="w-full flex items-center justify-between">
                     <TabsList>
-                        <TabsTrigger value="app">Application</TabsTrigger>
-                        <TabsTrigger value="extension">Extension</TabsTrigger>
+                        <TabsTrigger value="app">{t.application}</TabsTrigger>
+                        <TabsTrigger value="extension">{t.extension}</TabsTrigger>
                     </TabsList>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -50,18 +52,18 @@ export default function SettingsPage() {
                             disabled={isUsingDefaultSettings}
                             >
                                 <RotateCcw className="h-4 w-4" />
-                                Reset
+                                {t.reset}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Reset settings to default?</AlertDialogTitle>
+                                <AlertDialogTitle>{t.resetSettingsToDefault}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Are you sure you want to reset all settings to their default values? This action cannot be undone!
+                                    {t.areYouSureResetSettings}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
                                 <AlertDialogAction onClick={
                                     async () => {
                                         resetSettings();
@@ -69,7 +71,7 @@ export default function SettingsPage() {
                                             await stopPotServer();
                                         }
                                     }
-                                }>Reset</AlertDialogAction>
+                                }>{t.reset}</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>

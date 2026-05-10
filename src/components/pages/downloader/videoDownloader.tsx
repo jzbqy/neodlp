@@ -13,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from "@/components/ui/resizable";
 import { FormatToggleGroup, FormatToggleGroupItem } from "@/components/custom/formatToggleGroup";
 import { Layout } from "react-resizable-panels";
+import { useI18n } from "@/i18n/i18nProvider";
 
 interface VideoPreviewProps {
     videoMetadata: RawVideoInfo;
@@ -43,11 +44,12 @@ interface VideoDownloaderProps {
 }
 
 function VideoPreview({ videoMetadata }: VideoPreviewProps) {
+    const { t } = useI18n();
     return (
         <div className="flex flex-col w-full pr-4">
             <h3 className="text-sm mb-4 mt-2 flex items-center gap-2">
                 <Info className="w-4 h-4" />
-                <span>Metadata</span>
+                <span>{t.metadata}</span>
             </h3>
             <div className="flex flex-col overflow-y-scroll max-h-[50vh] xl:max-h-[60vh] no-scrollbar">
                 <AspectRatio ratio={16 / 9} className={clsx("w-full rounded-lg overflow-hidden mb-2 border border-border", videoMetadata.aspect_ratio && videoMetadata.aspect_ratio === 0.56 && "relative")}>
@@ -85,7 +87,7 @@ function VideoPreview({ videoMetadata }: VideoPreviewProps) {
                 </div>
                 <div className="flex items-center text-muted-foreground">
                     <Info className="w-3 h-3 mr-2" />
-                    <span className="text-xs">Extracted from {videoMetadata.extractor ? videoMetadata.extractor.charAt(0).toUpperCase() + videoMetadata.extractor.slice(1) : 'Unknown'}</span>
+                    <span className="text-xs">{t.extractedFrom} {videoMetadata.extractor ? videoMetadata.extractor.charAt(0).toUpperCase() + videoMetadata.extractor.slice(1) : t.statusUnknown}</span>
                 </div>
                 <div className="spacer mb-12"></div>
             </div>

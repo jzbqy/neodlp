@@ -11,6 +11,7 @@ import { ArrowUpRightIcon, CircleCheck, File, Info, ListVideo, Loader2, Music, P
 import { DownloadState } from "@/types/download";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { useNavigate } from "react-router-dom";
+import { useI18n } from "@/i18n/i18nProvider";
 
 interface IncompleteDownloadProps {
     state: DownloadState;
@@ -21,6 +22,7 @@ interface IncompleteDownloadsProps {
 }
 
 export function IncompleteDownload({ state }: IncompleteDownloadProps) {
+    const { t } = useI18n();
     const downloadActions = useDownloadActionStatesStore(state => state.downloadActions);
     const setIsResumingDownload = useDownloadActionStatesStore(state => state.setIsResumingDownload);
     const setIsPausingDownload = useDownloadActionStatesStore(state => state.setIsPausingDownload);
@@ -62,7 +64,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                 )}
                 {isMultiplePlaylistItems ? (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
-                        <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> Playlist ({state.playlist_indices?.split(',').length})
+                        <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> {t.playlist} ({state.playlist_indices?.split(',').length})
                     </span>
                 ) : state.ext ? (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
@@ -75,14 +77,14 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
                             <File className="w-4 h-4 mr-2 stroke-primary" />
                         )}
-                        {state.ext ? state.ext.toUpperCase() : 'Unknown'} {state.resolution ? `(${state.resolution})` : null}
+                        {state.ext ? state.ext.toUpperCase() : t.unknown} {state.resolution ? `(${state.resolution})` : null}
                     </span>
                 ) : (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
                         {state.download_status === 'starting' ? (
-                            <><Loader2 className="h-4 w-4 mr-2 stroke-primary animate-spin" /> Processing...</>
+                            <><Loader2 className="h-4 w-4 mr-2 stroke-primary animate-spin" /> {t.processing}...</>
                         ) : (
-                            <><File className="w-4 h-4 mr-2 stroke-primary" /> Unknown</>
+                            <><File className="w-4 h-4 mr-2 stroke-primary" /> {t.unknown}</>
                         )}
                     </span>
                 )}
@@ -109,9 +111,9 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                     )}
                     <div className="text-xs text-muted-foreground">
                         {state.download_status && state.download_status === 'downloading' && state.status === 'finished' ? (
-                            <span>Processing</span>
+                            <span>{t.processing}</span>
                         ) : state.download_status && state.download_status === 'errored' ? (
-                            <span className="text-destructive"><Info className="inline size-3 mb-1 mr-0.5" /> Errored</span>
+                            <span className="text-destructive"><Info className="inline size-3 mb-1 mr-0.5" /> {t.errored}</span>
                         ) : (
                             <span>{state.download_status.charAt(0).toUpperCase() + state.download_status.slice(1)}</span>
                         )} {
@@ -119,7 +121,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             <><span className="text-primary">•</span> ID: {state.download_id.toUpperCase()}</>
                         ) : null} {
                         state.download_status === 'downloading' && state.status !== 'finished' && state.speed && (
-                            <><span className="text-primary">•</span> Speed: {formatSpeed(state.speed)}</>
+                            <><span className="text-primary">•</span> {t.speed}: {formatSpeed(state.speed)}</>
                         )} {state.download_status === 'downloading' && state.eta && (
                             <><span className="text-primary">•</span> ETA: {formatSecToTimeString(state.eta)}</>
                         )}
@@ -134,13 +136,13 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             setIsResumingDownload(state.download_id, true);
                             try {
                                 await resumeDownload(state)
-                                // toast.success("Resumed Download", {
-                                //     description: "Download resumed, it will re-start shortly.",
-                                // })
+                                toast.success(t.resumedDownload, {
+                                    description: t.resumedDownloadDesc,
+                                })
                             } catch (e) {
                                 console.error(e);
-                                toast.error("Failed to Resume Download", {
-                                    description: `An error occurred while trying to resume the download for "${state.title}".`,
+                                toast.error(t.failedToResumeDownload, {
+                                    description: t.failedToResumeDownloadDesc.replace("{title}", state.title),
                                 })
                             } finally {
                                 setIsResumingDownload(state.download_id, false);
@@ -151,12 +153,12 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             {itemActionStates.isResuming ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Resuming
+                                    {t.resuming}
                                 </>
                             ) : (
                                 <>
                                     <Play className="w-4 h-4" />
-                                    Resume
+                                    {t.resume}
                                 </>
                             )}
                         </Button>
@@ -170,8 +172,8 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                                 await resumeDownload(state);
                             } catch (e) {
                                 console.error(e);
-                                toast.error("Failed to Restart Download", {
-                                    description: `An error occurred while trying to restart the download for "${state.title}".`,
+                                toast.error(t.failedToRestartDownload, {
+                                    description: t.failedToRestartDownloadDesc.replace("{title}", state.title),
                                 })
                             } finally {
                                 setIsResumingDownload(state.download_id, false);
@@ -182,12 +184,12 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             {itemActionStates.isResuming ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Retrying
+                                    {t.retrying}
                                 </>
                             ) : (
                                 <>
-                                    <RotateCw className="w-4 h-4" />
-                                    Retry
+                                    <RotateCw className="h-4 w-4" />
+                                    {t.retry}
                                 </>
                             )}
                         </Button>
@@ -199,13 +201,13 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             setIsPausingDownload(state.download_id, true);
                             try {
                                 await pauseDownload(state)
-                                // toast.success("Paused Download", {
-                                //     description: "Download paused successfully.",
-                                // })
+                                toast.success(t.pausedDownload, {
+                                    description: t.pausedDownloadDesc,
+                                })
                             } catch (e) {
                                 console.error(e);
-                                toast.error("Failed to Pause Download", {
-                                    description: `An error occurred while trying to pause the download for "${state.title}".`,
+                                toast.error(t.failedToPauseDownload, {
+                                    description: t.failedToPauseDownloadDesc.replace("{title}", state.title),
                                 })
                             } finally {
                                 setIsPausingDownload(state.download_id, false);
@@ -216,12 +218,12 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                             {itemActionStates.isPausing ? (
                                 <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Pausing
+                                    {t.pausing}
                                 </>
                             ) : (
                                 <>
-                                    <Pause className="w-4 h-4" />
-                                    Pause
+                                    <Pause className="h-4 w-4" />
+                                    {t.pause}
                                 </>
                             )}
                         </Button>
@@ -233,13 +235,13 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         setIsCancelingDownload(state.download_id, true);
                         try {
                             await cancelDownload(state)
-                            toast.success("Canceled Download", {
-                                description: `The download for "${state.title}" has been canceled.`,
+                            toast.success(t.canceledDownload, {
+                                description: t.canceledDownloadDesc.replace("{title}", state.title),
                             })
                         } catch (e) {
                             console.error(e);
-                            toast.error("Failed to Cancel Download", {
-                                description: `An error occurred while trying to cancel the download for "${state.title}".`,
+                            toast.error(t.failedToCancelDownload, {
+                                description: t.failedToCancelDownloadDesc.replace("{title}", state.title),
                             })
                         } finally {
                             setIsCancelingDownload(state.download_id, false);
@@ -250,12 +252,12 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
                         {itemActionStates.isCanceling ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Canceling
+                                {t.canceling}
                             </>
                         ) : (
                             <>
                                 <X className="w-4 h-4" />
-                                Cancel
+                                {t.cancel}
                             </>
                         )}
                     </Button>
@@ -266,6 +268,7 @@ export function IncompleteDownload({ state }: IncompleteDownloadProps) {
 }
 
 export function IncompleteDownloads({ downloads }: IncompleteDownloadsProps) {
+    const { t } = useI18n();
     const navigate = useNavigate();
 
     return (
@@ -282,9 +285,9 @@ export function IncompleteDownloads({ downloads }: IncompleteDownloadsProps) {
                         <EmptyMedia variant="icon">
                             <CircleCheck className="stroke-primary" />
                         </EmptyMedia>
-                        <EmptyTitle>No Incomplete Downloads</EmptyTitle>
+                        <EmptyTitle>{t.noIncompleteDownloads}</EmptyTitle>
                         <EmptyDescription>
-                        You have all caught up! Sit back and relax or just spin up a new download to see here :)
+                        {t.noIncompleteDownloadsDesc}
                         </EmptyDescription>
                     </EmptyHeader>
                     <Button
@@ -293,7 +296,7 @@ export function IncompleteDownloads({ downloads }: IncompleteDownloadsProps) {
                         size="sm"
                         onClick={() => navigate("/")}
                     >
-                        Spin Up a New Download  <ArrowUpRightIcon />
+                        {t.spinUpNewDownload}  <ArrowUpRightIcon />
                     </Button>
                 </Empty>
             )}

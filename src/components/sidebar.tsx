@@ -85,8 +85,8 @@ export function AppSidebar() {
                                     <NeoDlpLogo className="size-full rounded-md border border-border [--logo-stop-color-1:#4444FF] [--logo-stop-color-2:#FF43D0] customscheme:[--logo-stop-color-1:var(--color-chart-5)] customscheme:[--logo-stop-color-2:var(--color-chart-1)]" />
                                 </div>
                                 <div className="grid flex-1 text-left text-sm leading-tight">
-                                    <span className="truncate font-semibold">Neo Downloader Plus</span>
-                                    <span className="truncate text-xs">{isFetchingAppVersion ? 'Loading...' : `v${appVersion}`}</span>
+                                    <span className="truncate font-semibold">{t.neoDownloaderPlus}</span>
+                                    <span className="truncate text-xs">{isFetchingAppVersion ? t.loading : `v${appVersion}`}</span>
                                 </div>
                             </a>
                         </SidebarMenuButton>
@@ -154,18 +154,18 @@ export function AppSidebar() {
                             </Button>
                         </TooltipTrigger>
                         <TooltipContent side="right">
-                            <p>Update Available <br></br>(Expand sidebar to view update)</p>
+                            <p>{t.updateAvailableTooltip} <br></br>{t.expandSidebarToViewUpdate}</p>
                         </TooltipContent>
                     </Tooltip>
                 )}
                 {appUpdate && open && showUpdateCard && (
                     <Card className="gap-4 py-0">
                         <CardHeader className="p-4 pb-0">
-                            <CardTitle className="text-sm">Update Available (v{appUpdate?.version || '0.0.0'})</CardTitle>
+                            <CardTitle className="text-sm">{t.updateAvailableVersion.replace('{version}', appUpdate?.version || '0.0.0')}</CardTitle>
                             <CardDescription>
-                                A newer version of {config.appName} is available. Please update to the latest version for the best experience.
+                                {t.aNewerVersionOfNeodlpAvailable}
                             </CardDescription>
-                            <a className="text-xs font-semibold cursor-pointer mt-1" href={`https://github.com/${config.appRepo}/releases/tag/v${appUpdate?.version || '0.0.0'}`} target="_blank">✨ Read Changelog</a>
+                            <a className="text-xs font-semibold cursor-pointer mt-1" href={`https://github.com/${config.appRepo}/releases/tag/v${appUpdate?.version || '0.0.0'}`} target="_blank">✨ {t.readChangelog}</a>
                         </CardHeader>
                         <CardContent className="grid gap-2.5 p-4">
                         {isNativeLinuxApp ? (
@@ -175,7 +175,7 @@ export function AppSidebar() {
                             disabled={ongoingDownloads.length > 0 || isUpdatingApp}
                             asChild
                             >
-                                <a href={`https://github.com/${config.appRepo}/releases/tag/v${appUpdate?.version || '0.0.0'}`} target="_blank">Download Now</a>
+                                <a href={`https://github.com/${config.appRepo}/releases/tag/v${appUpdate?.version || '0.0.0'}`} target="_blank">{t.downloadNow}</a>
                             </Button>
                         ) : (
                             <AlertDialog>
@@ -186,16 +186,16 @@ export function AppSidebar() {
                                     disabled={ongoingDownloads.length > 0 || isUpdatingApp}
                                     onClick={() => downloadAndInstallAppUpdate(appUpdate)}
                                     >
-                                        Update Now
+                                        {t.updateNow}
                                     </Button>
                                 </AlertDialogTrigger>
                                 <AlertDialogContent>
                                     <AlertDialogHeader className="flex flex-col items-center text-center gap-2">
                                         <CircleArrowUp className="size-7 stroke-muted-foreground" />
-                                        <AlertDialogTitle>Updating {config.appName}</AlertDialogTitle>
-                                        <AlertDialogDescription className="text-center text-xs mb-2">Updating {config.appName} to v{appUpdate?.version || '0.0.0'}, Please be patience! Do not quit the app untill the update finishes. The app will auto re-launch to complete the update, Please allow all system prompts from {config.appName} if asked.</AlertDialogDescription>
+                                        <AlertDialogTitle>{t.updateApp}</AlertDialogTitle>
+                                        <AlertDialogDescription className="text-center text-xs mb-2">{t.updateAppDesc.replace('v{version}', `v${appUpdate?.version || '0.0.0'}`)}</AlertDialogDescription>
                                         <Progress value={appUpdateDownloadProgress} className="w-full" />
-                                        <AlertDialogDescription className="text-center">Downloading update... {appUpdateDownloadProgress}%</AlertDialogDescription>
+                                        <AlertDialogDescription className="text-center">{t.updateDownloading} {appUpdateDownloadProgress}%</AlertDialogDescription>
                                     </AlertDialogHeader>
                                 </AlertDialogContent>
                             </AlertDialog>

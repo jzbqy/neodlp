@@ -126,6 +126,7 @@ const potServerPortSchema = z.object({
 
 function AppGeneralSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const maxParallelDownloads = useSettingsPageStatesStore(state => state.settings.max_parallel_downloads);
     const maxRetries = useSettingsPageStatesStore(state => state.settings.max_retries);
@@ -137,8 +138,8 @@ function AppGeneralSettings() {
     return (
         <>
         <div className="max-parallel-downloads">
-            <h3 className="font-semibold">Max Parallel Downloads</h3>
-            <p className="text-xs text-muted-foreground mb-3">Set maximum number of allowed parallel downloads</p>
+            <h3 className="font-semibold">{t.maxParallelDownloads}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.setMaxParallelDownloads}</p>
             <Slider
             id="max-parallel-downloads"
             className="w-87.5 mb-2"
@@ -147,11 +148,11 @@ function AppGeneralSettings() {
             max={5}
             onValueChange={(value) => saveSettingsKey('max_parallel_downloads', value[0])}
             />
-            <Label htmlFor="max-parallel-downloads" className="text-xs text-muted-foreground">(Current: {maxParallelDownloads}) (Default: 2, Maximum: 5)</Label>
+            <Label htmlFor="max-parallel-downloads" className="text-xs text-muted-foreground">({t.current}: {maxParallelDownloads}) (Default: 2, Maximum: 5)</Label>
         </div>
         <div className="prefer-video-over-playlist">
-            <h3 className="font-semibold">Prefer Video Over Playlist</h3>
-            <p className="text-xs text-muted-foreground mb-3">Prefer only the video, if the URL refers to a video and a playlist</p>
+            <h3 className="font-semibold">{t.preferVideoOverPlaylist}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.preferVideoOverPlaylistDesc}</p>
             <Switch
             id="prefer-video-over-playlist"
             checked={preferVideoOverPlaylist}
@@ -159,8 +160,8 @@ function AppGeneralSettings() {
             />
         </div>
         <div className="strict-downloadability-check">
-            <h3 className="font-semibold">Strict Downloadablity Check</h3>
-            <p className="text-xs text-muted-foreground mb-3">Only show streams that are actualy downloadable, also check formats before downloading (high quality results, takes longer time to search)</p>
+            <h3 className="font-semibold">{t.strictDownloadabilityCheck}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.strictDownloadabilityCheckDesc}</p>
             <Switch
             id="strict-downloadablity-check"
             checked={strictDownloadabilityCheck}
@@ -168,8 +169,8 @@ function AppGeneralSettings() {
             />
         </div>
         <div className="max-retries">
-            <h3 className="font-semibold">Max Retries</h3>
-            <p className="text-xs text-muted-foreground mb-3">Set maximum number of retries for a download before giving up</p>
+            <h3 className="font-semibold">{t.maxRetries}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.setMaxRetries}</p>
             <Slider
             id="max-retries"
             className="w-87.5 mb-2"
@@ -178,11 +179,11 @@ function AppGeneralSettings() {
             max={100}
             onValueChange={(value) => saveSettingsKey('max_retries', value[0])}
             />
-            <Label htmlFor="max-retries" className="text-xs text-muted-foreground">(Current: {maxRetries}) (Default: 5, Maximum: 100)</Label>
+            <Label htmlFor="max-retries" className="text-xs text-muted-foreground">({t.current}: {maxRetries}) (Default: 5, Maximum: 100)</Label>
         </div>
         <div className="aria2">
-            <h3 className="font-semibold">Aria2</h3>
-            <p className="text-xs text-muted-foreground mb-3">Use aria2c as external downloader (recommended only if you are experiancing too slow download speeds with native downloader, you need to install aria2 via homebrew if you are on macos to use this feature)</p>
+            <h3 className="font-semibold">{t.aria2}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.aria2Desc}</p>
             <Switch
             id="aria2"
             checked={useAria2}
@@ -219,8 +220,8 @@ function AppAppearanceSettings() {
     ];
 
     const languageOptions: { value: string; label: string }[] = [
-        { value: 'en', label: 'English' },
-        { value: 'zh-CN', label: '简体中文' },
+        { value: 'en', label: t.english },
+        { value: 'zh-CN', label: t.simplifiedChinese },
     ];
 
     return (
@@ -317,6 +318,7 @@ function AppAppearanceSettings() {
 
 function AppFilesystemSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
 
@@ -346,17 +348,17 @@ function AppFilesystemSettings() {
                         await fs.remove(filePath);
                     }
                 }
-                toast.success("Temporary Downloads Cleaned", {
-                    description: "All temporary downloads have been successfully cleaned up.",
+                toast.success(t.tempDownloadsCleaned, {
+                    description: t.tempDownloadsCleanedDesc,
                 });
             } catch (e) {
-                toast.error("Temporary Downloads Cleanup Failed", {
-                    description: "An error occurred while trying to clean up temporary downloads. Please try again.",
+                toast.error(t.tempDownloadsCleanupFailed, {
+                    description: t.tempDownloadsCleanupFailedDesc,
                 });
             }
         } else {
-            toast.info("No Temporary Downloads", {
-                description: "There are no temporary downloads to clean up.",
+            toast.info(t.noTempDownloads, {
+                description: t.noTempDownloadsDesc,
             });
         }
     }
@@ -374,13 +376,13 @@ function AppFilesystemSettings() {
     function handleFilenameTemplateSubmit(values: z.infer<typeof filenameTemplateShcema>) {
         try {
             saveSettingsKey('filename_template', values.template);
-            toast.success("Filename Template updated", {
-                description: `Filename Template changed to ${values.template}`,
+            toast.success(t.filenameTemplateUpdated, {
+                description: `${t.filenameTemplateUpdatedDesc}${values.template}`,
             });
         } catch (error) {
             console.error("Error changing filename template:", error);
-            toast.error("Failed to change filename template", {
-                description: "An error occurred while trying to change the filename template. Please try again.",
+            toast.error(t.filenameTemplateUpdateFailed, {
+                description: t.filenameTemplateUpdateFailedDesc,
             });
         }
     }
@@ -395,10 +397,10 @@ function AppFilesystemSettings() {
     return (
         <>
         <div className="download-dir">
-            <h3 className="font-semibold">Download Folder</h3>
-            <p className="text-xs text-muted-foreground mb-3">Set default download folder (directory)</p>
+            <h3 className="font-semibold">{t.downloadFolder}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.setDefaultDownloadFolder}</p>
             <div className="flex items-center gap-4">
-                <Input className="focus-visible:ring-0" type="text" placeholder="Select download directory" value={downloadDirPath ?? 'Unknown'} readOnly/>
+                <Input className="focus-visible:ring-0" type="text" placeholder={t.selectDownloadDirectory} value={downloadDirPath ?? t.unknown} readOnly/>
                 <Button
                 variant="outline"
                 disabled={isFlatpak}
@@ -414,48 +416,48 @@ function AppFilesystemSettings() {
                         }
                     } catch (error) {
                         console.error("Error selecting folder:", error);
-                        toast.error("Failed to select folder", {
-                            description: "An error occurred while trying to select the download folder. Please try again.",
+                        toast.error(t.failedToSelectFolder, {
+                            description: t.failedToSelectFolderDesc,
                         });
                     }
                 }}
                 >
-                    <FolderOpen className="w-4 h-4" /> Browse
+                    <FolderOpen className="w-4 h-4" /> {t.browse}
                 </Button>
             </div>
         </div>
         <div className="temporary-download-dir">
-            <h3 className="font-semibold">Temporary Download Folder</h3>
-            <p className="text-xs text-muted-foreground mb-3">Clean up temporary downloads (broken, cancelled, paused downloads)</p>
+            <h3 className="font-semibold">{t.temporaryDownloadFolder}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.cleanupTempDownloads}</p>
             <div className="flex items-center gap-4">
-                <Input className="focus-visible:ring-0" type="text" placeholder="Temporary download directory" value={tempDownloadDirPath ?? 'Unknown'} readOnly/>
+                <Input className="focus-visible:ring-0" type="text" placeholder={t.temporaryDownloadDirectory} value={tempDownloadDirPath ?? t.unknown} readOnly/>
                 <AlertDialog>
                     <AlertDialogTrigger asChild>
                         <Button
                         variant="destructive"
                         disabled={ongoingDownloads.length > 0 || isFlatpak}
                         >
-                            <BrushCleaning className="size-4" /> Clean
+                            <BrushCleaning className="size-4" /> {t.clean}
                         </Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                         <AlertDialogHeader>
-                            <AlertDialogTitle>Clean up all temporary downloads?</AlertDialogTitle>
-                            <AlertDialogDescription>Are you sure you want to clean up all temporary downloads? This will remove all broken, cancelled and paused downloads from the temporary folder. Paused downloads will re-start from the begining. This action cannot be undone!</AlertDialogDescription>
+                            <AlertDialogTitle>{t.cleanUpAllTempDownloads}</AlertDialogTitle>
+                            <AlertDialogDescription>{t.cleanUpAllTempDownloadsDesc}</AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
                             <AlertDialogAction
                             onClick={() => cleanTemporaryDownloads()}
-                            >Clean</AlertDialogAction>
+                            >{t.clean}</AlertDialogAction>
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
             </div>
         </div>
         <div className="filename-template">
-            <h3 className="font-semibold">Filename Template</h3>
-            <p className="text-xs text-muted-foreground mb-3">Set the template for naming downloaded files (download id, file extension and playlist index will be auto-appended, changing template may cause paused downloads to re-start from begining)</p>
+            <h3 className="font-semibold">{t.filenameTemplate}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.setFilenameTemplate}</p>
             <Form {...filenameTemplateForm}>
                 <form onSubmit={filenameTemplateForm.handleSubmit(handleFilenameTemplateSubmit)} className="flex gap-4 w-full" autoComplete="off">
                     <FormField
@@ -466,7 +468,7 @@ function AppFilesystemSettings() {
                                 <FormControl>
                                     <Input
                                     className="focus-visible:ring-0"
-                                    placeholder="Enter filename template"
+                                    placeholder={t.enterFilenameTemplate}
                                     {...field}
                                     />
                                 </FormControl>
@@ -478,21 +480,21 @@ function AppFilesystemSettings() {
                         type="submit"
                         disabled={!watchedFilenameTemplate || watchedFilenameTemplate === filenameTemplate || Object.keys(filenameTemplateFormErrors).length > 0}
                     >
-                        Save
+                        {t.save}
                     </Button>
                 </form>
             </Form>
         </div>
         <div className="sanitize-filenames">
-            <h3 className="font-semibold">Sanitize Filenames</h3>
-            <p className="text-xs text-muted-foreground mb-3">Make filenames windows-compatible, allow only ASCII characters and replace spaces with underscore (recommended, disabling it may cause issue with some downloads, also it may cause paused downloads to re-start from begining)</p>
+            <h3 className="font-semibold">{t.sanitizeFilenames}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.sanitizeFilenamesDesc}</p>
             <div className="flex items-center space-x-2 mb-3">
                 <Switch
                 id="windows-filenames"
                 checked={windowsFilenames}
                 onCheckedChange={(checked) => saveSettingsKey('windows_filenames', checked)}
                 />
-                <Label htmlFor="windows-filenames">Windows Compatibility</Label>
+                <Label htmlFor="windows-filenames">{t.windowsCompatibility}</Label>
             </div>
             <div className="flex items-center space-x-2">
                 <Switch
@@ -500,7 +502,7 @@ function AppFilesystemSettings() {
                 checked={restrictFilenames}
                 onCheckedChange={(checked) => saveSettingsKey('restrict_filenames', checked)}
                 />
-                <Label htmlFor="restrict-filenames">Force ASCII Only</Label>
+                <Label htmlFor="restrict-filenames">{t.forceAsciiOnly}</Label>
             </div>
         </div>
         </>
@@ -509,6 +511,7 @@ function AppFilesystemSettings() {
 
 function AppFormatSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const videoFormat = useSettingsPageStatesStore(state => state.settings.video_format);
     const audioFormat = useSettingsPageStatesStore(state => state.settings.audio_format);
@@ -518,8 +521,8 @@ function AppFormatSettings() {
     return (
         <>
         <div className="video-format">
-            <h3 className="font-semibold">Video Format</h3>
-            <p className="text-xs text-muted-foreground mb-3">Choose in which format the final video file will be saved</p>
+            <h3 className="font-semibold">{t.videoFormat}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.chooseVideoFormat}</p>
             <RadioGroup
             orientation="horizontal"
             className="flex items-center gap-4"
@@ -529,7 +532,7 @@ function AppFormatSettings() {
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="auto" id="v-auto" />
-                    <Label htmlFor="v-auto">Auto (Default)</Label>
+                    <Label htmlFor="v-auto">{t.auto}</Label>
                 </div>
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="mp4" id="v-mp4" />
@@ -546,8 +549,8 @@ function AppFormatSettings() {
             </RadioGroup>
         </div>
         <div className="audio-format">
-            <h3 className="font-semibold">Audio Format</h3>
-            <p className="text-xs text-muted-foreground mb-3">Choose in which format the final audio file will be saved</p>
+            <h3 className="font-semibold">{t.audioFormat}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.chooseAudioFormat}</p>
             <RadioGroup
             orientation="horizontal"
             className="flex items-center gap-4"
@@ -557,7 +560,7 @@ function AppFormatSettings() {
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="auto" id="a-auto" />
-                    <Label htmlFor="a-auto">Auto (Default)</Label>
+                    <Label htmlFor="a-auto">{t.auto}</Label>
                 </div>
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="m4a" id="a-m4a" />
@@ -574,8 +577,8 @@ function AppFormatSettings() {
             </RadioGroup>
         </div>
         <div className="always-reencode-video">
-            <h3 className="font-semibold">Always Re-Encode Video</h3>
-            <p className="text-xs text-muted-foreground mb-3">Instead of remuxing (simple container change) always re-encode the video to the target format with best compatible codecs (better compatibility, takes longer processing time)</p>
+            <h3 className="font-semibold">{t.alwaysReencodeVideo}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.alwaysReencodeVideoDesc}</p>
             <Switch
             id="always-reencode-video"
             checked={alwaysReencodeVideo}
@@ -589,6 +592,7 @@ function AppFormatSettings() {
 
 function AppEmbeddingSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const embedVideoMetadata = useSettingsPageStatesStore(state => state.settings.embed_video_metadata);
     const embedAudioMetadata = useSettingsPageStatesStore(state => state.settings.embed_audio_metadata);
@@ -599,8 +603,8 @@ function AppEmbeddingSettings() {
     return (
         <>
         <div className="embed-metadata">
-            <h3 className="font-semibold">Embed Metadata</h3>
-            <p className="text-xs text-muted-foreground mb-3">Wheather to embed metadata in video/audio files (info, chapters)</p>
+            <h3 className="font-semibold">{t.embedMetadata}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.embedMetadataDesc}</p>
             <div className="flex items-center space-x-2 mb-3">
                 <Switch
                 id="embed-video-metadata"
@@ -608,7 +612,7 @@ function AppEmbeddingSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('embed_video_metadata', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="embed-video-metadata">Video</Label>
+                <Label htmlFor="embed-video-metadata">{t.video}</Label>
             </div>
             <div className="flex items-center space-x-2">
                 <Switch
@@ -617,12 +621,12 @@ function AppEmbeddingSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('embed_audio_metadata', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="embed-audio-metadata">Audio</Label>
+                <Label htmlFor="embed-audio-metadata">{t.audio}</Label>
             </div>
         </div>
         <div className="embed-thumbnail">
-            <h3 className="font-semibold">Embed Thumbnail</h3>
-            <p className="text-xs text-muted-foreground mb-3">Wheather to embed thumbnail in video/audio files (as cover art)</p>
+            <h3 className="font-semibold">{t.embedThumbnail}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.embedThumbnailDesc}</p>
             <div className="flex items-center space-x-2 mb-3">
                 <Switch
                 id="embed-video-thumbnail"
@@ -630,7 +634,7 @@ function AppEmbeddingSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('embed_video_thumbnail', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="embed-video-thumbnail">Video</Label>
+                <Label htmlFor="embed-video-thumbnail">{t.video}</Label>
             </div>
             <div className="flex items-center space-x-2">
                 <Switch
@@ -639,7 +643,7 @@ function AppEmbeddingSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('embed_audio_thumbnail', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="embed-audio-thumbnail">Audio</Label>
+                <Label htmlFor="embed-audio-thumbnail">{t.audio}</Label>
             </div>
         </div>
         </>
@@ -648,6 +652,7 @@ function AppEmbeddingSettings() {
 
 function AppNetworkSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
@@ -673,13 +678,13 @@ function AppNetworkSettings() {
     function handleProxyUrlSubmit(values: z.infer<typeof proxyUrlSchema>) {
         try {
             saveSettingsKey('proxy_url', values.url);
-            toast.success("Proxy URL updated", {
-                description: `Proxy URL changed to ${values.url}`,
+            toast.success(t.proxyUrlUpdated, {
+                description: `${t.proxyUrlUpdatedDesc}${values.url}`,
             });
         } catch (error) {
             console.error("Error changing proxy URL:", error);
-            toast.error("Failed to change proxy URL", {
-                description: "An error occurred while trying to change the proxy URL. Please try again.",
+            toast.error(t.proxyUrlUpdateFailed, {
+                description: t.proxyUrlUpdateFailedDesc,
             });
         }
     }
@@ -697,13 +702,13 @@ function AppNetworkSettings() {
     function handleRateLimitSubmit(values: z.infer<typeof rateLimitSchema>) {
         try {
             saveSettingsKey('rate_limit', values.rate_limit);
-            toast.success("Rate Limit updated", {
-                description: `Rate Limit changed to ${values.rate_limit} bytes/s`,
+            toast.success(t.rateLimitUpdated, {
+                description: `${t.rateLimitUpdatedDesc}${values.rate_limit} bytes/s`,
             });
         } catch (error) {
             console.error("Error changing rate limit:", error);
-            toast.error("Failed to change rate limit", {
-                description: "An error occurred while trying to change the rate limit. Please try again.",
+            toast.error(t.rateLimitUpdateFailed, {
+                description: t.rateLimitUpdateFailedDesc,
             });
         }
     }
@@ -719,8 +724,8 @@ function AppNetworkSettings() {
     return (
         <>
         <div className="proxy">
-            <h3 className="font-semibold">Proxy</h3>
-            <p className="text-xs text-muted-foreground mb-3">Use proxy for downloads, Unblocks blocked sites in your region (download speed may affect, some sites may not work)</p>
+            <h3 className="font-semibold">{t.proxy}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.proxyDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="use-proxy"
@@ -728,7 +733,7 @@ function AppNetworkSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_proxy', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="use-proxy">Use Proxy</Label>
+                <Label htmlFor="use-proxy">{t.useProxy}</Label>
             </div>
             <Form {...proxyUrlForm}>
                 <form onSubmit={proxyUrlForm.handleSubmit(handleProxyUrlSubmit)} className="flex gap-4 w-full" autoComplete="off">
@@ -741,12 +746,12 @@ function AppNetworkSettings() {
                                 <FormControl>
                                     <Input
                                     className="focus-visible:ring-0"
-                                    placeholder="Enter proxy URL"
+                                    placeholder={t.enterProxyUrl}
                                     readOnly={useCustomCommands}
                                     {...field}
                                     />
                                 </FormControl>
-                                <Label htmlFor="url" className="text-xs text-muted-foreground">(Configured: {proxyUrl ? 'Yes' : 'No'}, Status: {useProxy && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
+                                <Label htmlFor="url" className="text-xs text-muted-foreground">({t.configured}: {proxyUrl ? t.yes : t.no}, {t.status}: {useProxy && !useCustomCommands ? t.enabled : t.disabled})</Label>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -755,14 +760,14 @@ function AppNetworkSettings() {
                         type="submit"
                         disabled={!watchedProxyUrl || watchedProxyUrl === proxyUrl || Object.keys(proxyUrlFormErrors).length > 0 || !useProxy}
                     >
-                        Save
+                        {t.save}
                     </Button>
                 </form>
             </Form>
         </div>
         <div className="rate-limit">
-            <h3 className="font-semibold">Rate Limit</h3>
-            <p className="text-xs text-muted-foreground mb-3">Limit download speed to prevent network congestion. Rate limit is applied per-download basis (not in the whole app)</p>
+            <h3 className="font-semibold">{t.rateLimit}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.rateLimitDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="use-rate-limit"
@@ -770,7 +775,7 @@ function AppNetworkSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_rate_limit', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="use-rate-limit">Use Rate Limit</Label>
+                <Label htmlFor="use-rate-limit">{t.useRateLimit}</Label>
             </div>
             <Form {...rateLimitForm}>
                 <form onSubmit={rateLimitForm.handleSubmit(handleRateLimitSubmit)} className="flex gap-4 w-full" autoComplete="off">
@@ -783,13 +788,13 @@ function AppNetworkSettings() {
                                 <FormControl>
                                     <NumberInput
                                     className="w-full"
-                                    placeholder="Enter rate limit in bytes/s"
+                                    placeholder={t.enterRateLimit}
                                     min={0}
                                     readOnly={useCustomCommands}
                                     {...field}
                                     />
                                 </FormControl>
-                                <Label htmlFor="rate_limit" className="text-xs text-muted-foreground">(Configured: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : 'No'}, Status: {useRateLimit && !useCustomCommands ? 'Enabled' : 'Disabled'}) (Default: 1048576, Range: 1024-104857600)</Label>
+                                <Label htmlFor="rate_limit" className="text-xs text-muted-foreground">({t.configured}: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : t.no}, {t.status}: {useRateLimit && !useCustomCommands ? t.enabled : t.disabled}) ({t.default}: 1048576, {t.range}: 1024-104857600)</Label>
                                 <FormMessage />
                             </FormItem>
                         )}
@@ -798,14 +803,14 @@ function AppNetworkSettings() {
                         type="submit"
                         disabled={!watchedRateLimit || Number(watchedRateLimit) === rateLimit || Object.keys(rateLimitFormErrors).length > 0 || !useRateLimit}
                     >
-                        Save
+                        {t.save}
                     </Button>
                 </form>
             </Form>
         </div>
         <div className="force-internet-protocol">
-            <h3 className="font-semibold">Force Internet Protocol</h3>
-            <p className="text-xs text-muted-foreground mb-3">Force use a specific internet protocol (ipv4/ipv6) for all downloads, useful if your network supports only one (some sites may not work)</p>
+            <h3 className="font-semibold">{t.forceInternetProtocol}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.forceInternetProtocolDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="use-force-internet-protocol"
@@ -813,7 +818,7 @@ function AppNetworkSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_force_internet_protocol', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="use-force-internet-protocol">Force IPV</Label>
+                <Label htmlFor="use-force-internet-protocol">{t.forceIpv}</Label>
             </div>
             <RadioGroup
             orientation="horizontal"
@@ -824,14 +829,14 @@ function AppNetworkSettings() {
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="ipv4" id="force-ipv4" />
-                    <Label htmlFor="force-ipv4">Use IPv4 Only</Label>
+                    <Label htmlFor="force-ipv4">{t.useIpv4Only}</Label>
                 </div>
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="ipv6" id="force-ipv6" />
-                    <Label htmlFor="force-ipv6">Use IPv6 Only</Label>
+                    <Label htmlFor="force-ipv6">{t.useIpv6Only}</Label>
                 </div>
             </RadioGroup>
-            <Label className="text-xs text-muted-foreground">(Forced: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, Status: {useForceInternetProtocol && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
+            <Label className="text-xs text-muted-foreground">({t.forced}: {forceInternetProtocol === "ipv4" ? 'IPv4' : 'IPv6'}, {t.status}: {useForceInternetProtocol && !useCustomCommands ? t.enabled : t.disabled})</Label>
         </div>
         </>
     );
@@ -839,6 +844,7 @@ function AppNetworkSettings() {
 
 function AppCookiesSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
 
@@ -851,8 +857,8 @@ function AppCookiesSettings() {
     return (
         <>
         <div className="cookies">
-            <h3 className="font-semibold">Cookies</h3>
-            <p className="text-xs text-muted-foreground mb-3">Use cookies to access exclusive/private (login-protected) contents from sites (use wisely, over-use can even block/ban your account)</p>
+            <h3 className="font-semibold">{t.cookiesSettings}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.cookiesDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="use-cookies"
@@ -860,7 +866,7 @@ function AppCookiesSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_cookies', checked)}
                 disabled={useCustomCommands || isFlatpak}
                 />
-                <Label htmlFor="use-cookies">Use Cookies</Label>
+                <Label htmlFor="use-cookies">{t.useCookies}</Label>
             </div>
             <RadioGroup
             orientation="horizontal"
@@ -871,43 +877,43 @@ function AppCookiesSettings() {
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="browser" id="cookies-browser" />
-                    <Label htmlFor="cookies-browser">Import from Browser</Label>
+                    <Label htmlFor="cookies-browser">{t.importFromBrowser}</Label>
                 </div>
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="file" id="cookies-file" />
-                    <Label htmlFor="cookies-file">Import from Text File</Label>
+                    <Label htmlFor="cookies-file">{t.importFromTextFile}</Label>
                 </div>
             </RadioGroup>
             <div className="flex flex-col gap-2 mt-5 mb-2">
-                <Label className="text-xs">Import Cookies from Browser</Label>
+                <Label className="text-xs">{t.importCookiesFromBrowser}</Label>
                 <Select
                 value={cookiesBrowser}
                 onValueChange={(value) => saveSettingsKey('cookies_browser', value)}
                 disabled={importCookiesFrom !== "browser" || !useCookies || useCustomCommands || isFlatpak}
                 >
                     <SelectTrigger className="w-57.5 ring-0 focus:ring-0">
-                        <SelectValue placeholder="Select browser to import cookies" />
+                        <SelectValue placeholder={t.selectBrowserToImport} />
                     </SelectTrigger>
                     <SelectContent>
                         <SelectGroup>
-                            <SelectLabel>Browsers</SelectLabel>
-                            <SelectItem value="firefox">Firefox (Recommended)</SelectItem>
-                            <SelectItem value="chrome">Chrome</SelectItem>
-                            <SelectItem value="chromium">Chromium</SelectItem>
-                            <SelectItem value="safari">Safari</SelectItem>
-                            <SelectItem value="brave">Brave</SelectItem>
-                            <SelectItem value="edge">Edge</SelectItem>
-                            <SelectItem value="opera">Opera</SelectItem>
-                            <SelectItem value="vivaldi">Vivaldi</SelectItem>
-                            <SelectItem value="whale">Whale</SelectItem>
+                            <SelectLabel>{t.browsers}</SelectLabel>
+                            <SelectItem value="firefox">{t.firefoxRecommended}</SelectItem>
+                            <SelectItem value="chrome">{t.chrome}</SelectItem>
+                            <SelectItem value="chromium">{t.chromium}</SelectItem>
+                            <SelectItem value="safari">{t.safari}</SelectItem>
+                            <SelectItem value="brave">{t.brave}</SelectItem>
+                            <SelectItem value="edge">{t.edge}</SelectItem>
+                            <SelectItem value="opera">{t.opera}</SelectItem>
+                            <SelectItem value="vivaldi">{t.vivaldi}</SelectItem>
+                            <SelectItem value="whale">{t.whale}</SelectItem>
                         </SelectGroup>
                     </SelectContent>
                 </Select>
             </div>
             <div className="flex flex-col gap-2 mt-3 mb-2">
-                <Label className="text-xs">Import Cookies from Text File (Netscape format)</Label>
+                <Label className="text-xs">{t.importCookiesFromTextFile}</Label>
                 <div className="flex items-center gap-4">
-                    <Input className="focus-visible:ring-0" type="text" placeholder="Select cookies text file" value={cookiesFile ?? ''} disabled={importCookiesFrom !== "file" || !useCookies} readOnly/>
+                    <Input className="focus-visible:ring-0" type="text" placeholder={t.selectCookiesTextFile} value={cookiesFile ?? ''} disabled={importCookiesFrom !== "file" || !useCookies} readOnly/>
                     <Button
                     variant="outline"
                     disabled={importCookiesFrom !== "file" || !useCookies || useCustomCommands || isFlatpak}
@@ -917,7 +923,7 @@ function AppCookiesSettings() {
                                 multiple: false,
                                 directory: false,
                                 filters: [
-                                    { name: 'Text', extensions: ['txt'] },
+                                    { name: t.text, extensions: ['txt'] },
                                 ],
                             });
                             if (file && typeof file === 'string') {
@@ -925,17 +931,17 @@ function AppCookiesSettings() {
                             }
                         } catch (error) {
                             console.error("Error selecting file:", error);
-                            toast.error("Failed to select file", {
-                                description: "An error occurred while trying to select the cookies text file. Please try again.",
+                            toast.error(t.failedToSelectCookiesFile, {
+                                description: t.failedToSelectCookiesFileDesc,
                             });
                         }
                     }}
                     >
-                        <FolderOpen className="w-4 h-4" /> Browse
+                        <FolderOpen className="w-4 h-4" /> {t.browse}
                     </Button>
                 </div>
             </div>
-            <Label className="text-xs text-muted-foreground">(Configured: {importCookiesFrom === "browser" ? 'Yes' : cookiesFile ? 'Yes' : 'No'}, From: {importCookiesFrom === "browser" ? 'Browser' : 'Text'}, Status: {useCookies && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
+            <Label className="text-xs text-muted-foreground">({t.configured}: {importCookiesFrom === "browser" ? t.yes : cookiesFile ? t.yes : t.no}, {t.from}: {importCookiesFrom === "browser" ? t.browser : t.text}, {t.status}: {useCookies && !useCustomCommands ? t.enabled : t.disabled})</Label>
         </div>
         </>
     );
@@ -943,6 +949,7 @@ function AppCookiesSettings() {
 
 function AppSponsorblockSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const useSponsorblock = useSettingsPageStatesStore(state => state.settings.use_sponsorblock);
     const sponsorblockMode = useSettingsPageStatesStore(state => state.settings.sponsorblock_mode);
@@ -953,24 +960,24 @@ function AppSponsorblockSettings() {
     const useCustomCommands = useSettingsPageStatesStore(state => state.settings.use_custom_commands);
 
     const sponsorblockCategories: { code: string; label: string }[] = [
-        { code: 'sponsor', label: 'Sponsorship' },
-        { code: 'intro', label: 'Intro' },
-        { code: 'outro', label: 'Outro' },
-        { code: 'interaction', label: 'Interaction' },
-        { code: 'selfpromo', label: 'Self Promotion' },
-        { code: 'music_offtopic', label: 'Music Offtopic' },
-        { code: 'preview', label: 'Preview' },
-        { code: 'filler', label: 'Filler' },
-        { code: 'poi_highlight', label: 'Point of Interest' },
-        { code: 'chapter', label: 'Chapter' },
-        { code: 'hook', label: 'Hook' },
+        { code: 'sponsor', label: t.sponsorship },
+        { code: 'intro', label: t.intro },
+        { code: 'outro', label: t.outro },
+        { code: 'interaction', label: t.interaction },
+        { code: 'selfpromo', label: t.selfPromotion },
+        { code: 'music_offtopic', label: t.musicOfftopic },
+        { code: 'preview', label: t.preview },
+        { code: 'filler', label: t.filler },
+        { code: 'poi_highlight', label: t.pointOfInterest },
+        { code: 'chapter', label: t.chapter },
+        { code: 'hook', label: t.hook },
     ];
 
     return (
         <>
         <div className="sponsorblock">
-            <h3 className="font-semibold">Sponsorblock</h3>
-            <p className="text-xs text-muted-foreground mb-3">Use sponsorblock to remove/mark unwanted segments in videos (sponsorships, intros, outros, etc.)</p>
+            <h3 className="font-semibold">{t.sponsorblockSettings}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.sponsorblockDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="use-sponsorblock"
@@ -978,7 +985,7 @@ function AppSponsorblockSettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_sponsorblock', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="use-sponsorblock">Use Sponsorblock</Label>
+                <Label htmlFor="use-sponsorblock">{t.useSponsorblock}</Label>
             </div>
             <RadioGroup
             orientation="horizontal"
@@ -989,15 +996,15 @@ function AppSponsorblockSettings() {
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="remove" id="sponsorblock-remove" />
-                    <Label htmlFor="sponsorblock-remove">Remove Segments</Label>
+                    <Label htmlFor="sponsorblock-remove">{t.removeSegments}</Label>
                 </div>
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="mark" id="sponsorblock-mark" />
-                    <Label htmlFor="sponsorblock-mark">Mark Segments</Label>
+                    <Label htmlFor="sponsorblock-mark">{t.markSegments}</Label>
                 </div>
             </RadioGroup>
             <div className="flex flex-col gap-2 mt-5">
-                <Label className="text-xs mb-1">Sponsorblock Remove Categories</Label>
+                <Label className="text-xs mb-1">{t.sponsorblockRemoveCategories}</Label>
                 <RadioGroup
                 orientation="horizontal"
                 className="flex items-center gap-4"
@@ -1007,15 +1014,15 @@ function AppSponsorblockSettings() {
                 >
                     <div className="flex items-center gap-3">
                         <RadioGroupItem value="default" id="sponsorblock-remove-default" />
-                        <Label htmlFor="sponsorblock-remove-default">Default</Label>
+                        <Label htmlFor="sponsorblock-remove-default">{t.default}</Label>
                     </div>
                     <div className="flex items-center gap-3">
                         <RadioGroupItem value="all" id="sponsorblock-remove-all" />
-                        <Label htmlFor="sponsorblock-remove-all">All</Label>
+                        <Label htmlFor="sponsorblock-remove-all">{t.all}</Label>
                     </div>
                     <div className="flex items-center gap-3">
                         <RadioGroupItem value="custom" id="sponsorblock-remove-custom" />
-                        <Label htmlFor="sponsorblock-remove-custom">Custom</Label>
+                        <Label htmlFor="sponsorblock-remove-custom">{t.custom}</Label>
                     </div>
                 </RadioGroup>
                 <ToggleGroup
@@ -1044,7 +1051,7 @@ function AppSponsorblockSettings() {
                 </ToggleGroup>
             </div>
             <div className="flex flex-col gap-2 mt-4">
-                <Label className="text-xs mb-1">Sponsorblock Mark Categories</Label>
+                <Label className="text-xs mb-1">{t.sponsorblockMarkCategories}</Label>
                 <RadioGroup
                 orientation="horizontal"
                 className="flex items-center gap-4"
@@ -1054,15 +1061,15 @@ function AppSponsorblockSettings() {
                 >
                     <div className="flex items-center gap-3">
                         <RadioGroupItem value="default" id="sponsorblock-mark-default" />
-                        <Label htmlFor="sponsorblock-mark-default">Default</Label>
+                        <Label htmlFor="sponsorblock-mark-default">{t.default}</Label>
                     </div>
                     <div className="flex items-center gap-3">
                         <RadioGroupItem value="all" id="sponsorblock-mark-all" />
-                        <Label htmlFor="sponsorblock-mark-all">All</Label>
+                        <Label htmlFor="sponsorblock-mark-all">{t.all}</Label>
                     </div>
                     <div className="flex items-center gap-3">
                         <RadioGroupItem value="custom" id="sponsorblock-mark-custom" />
-                        <Label htmlFor="sponsorblock-mark-custom">Custom</Label>
+                        <Label htmlFor="sponsorblock-mark-custom">{t.custom}</Label>
                     </div>
                 </RadioGroup>
                 <ToggleGroup
@@ -1088,7 +1095,7 @@ function AppSponsorblockSettings() {
                     </div>
                 </ToggleGroup>
             </div>
-            <Label className="text-xs text-muted-foreground">(Configured: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? 'No' : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? 'No' : 'Yes'}, Mode: {sponsorblockMode === "remove" ? 'Remove' : 'Mark'}, Status: {useSponsorblock && !useCustomCommands ? 'Enabled' : 'Disabled'})</Label>
+            <Label className="text-xs text-muted-foreground">({t.configured}: {sponsorblockMode === "remove" && sponsorblockRemove === "custom" && sponsorblockRemoveCategories.length <= 0 ? t.no : sponsorblockMode === "mark" && sponsorblockMark === "custom" && sponsorblockMarkCategories.length <= 0 ? t.no : t.yes}, {t.mode}: {sponsorblockMode === "remove" ? t.removeSegments : t.markSegments}, {t.status}: {useSponsorblock && !useCustomCommands ? t.enabled : t.disabled})</Label>
         </div>
         </>
     );
@@ -1096,6 +1103,7 @@ function AppSponsorblockSettings() {
 
 function AppDelaySettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
@@ -1125,13 +1133,13 @@ function AppDelaySettings() {
         try {
             saveSettingsKey('min_sleep_interval', values.min_sleep_interval);
             saveSettingsKey('max_sleep_interval', values.max_sleep_interval);
-            toast.success("Sleep Intervals updated", {
-                description: `Minimum Sleep Interval changed to ${values.min_sleep_interval} seconds, Maximum Sleep Interval changed to ${values.max_sleep_interval} seconds`,
+            toast.success(t.sleepIntervalsUpdated, {
+                description: `${t.sleepIntervalsUpdatedDesc}${values.min_sleep_interval} seconds, Maximum Sleep Interval changed to ${values.max_sleep_interval} seconds`,
             });
         } catch (error) {
             console.error("Error changing sleep intervals:", error);
-            toast.error("Failed to change sleep intervals", {
-                description: "An error occurred while trying to change the sleep intervals. Please try again.",
+            toast.error(t.sleepIntervalsUpdateFailed, {
+                description: t.sleepIntervalsUpdateFailedDesc,
             });
         }
     }
@@ -1149,13 +1157,13 @@ function AppDelaySettings() {
     function handleRequestSleepIntervalSubmit(values: z.infer<typeof requestSleepIntervalSchema>) {
         try {
             saveSettingsKey('request_sleep_interval', values.request_sleep_interval);
-            toast.success("Request Sleep Interval updated", {
+            toast.success(t.sleepIntervalsUpdated, {
                 description: `Request Sleep Interval changed to ${values.request_sleep_interval} seconds`,
             });
         } catch (error) {
             console.error("Error changing request sleep interval:", error);
-            toast.error("Failed to change request sleep interval", {
-                description: "An error occurred while trying to change the request sleep interval. Please try again.",
+            toast.error(t.sleepIntervalsUpdateFailed, {
+                description: t.sleepIntervalsUpdateFailedDesc,
             });
         }
     }
@@ -1171,8 +1179,8 @@ function AppDelaySettings() {
     return (
         <>
         <div className="delay">
-            <h3 className="font-semibold">Delay</h3>
-            <p className="text-xs text-muted-foreground mb-3">Use delay to prevent potential issues with some sites (bypass rate-limit, temporary ban, etc.)</p>
+            <h3 className="font-semibold">{t.delay}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.delayDesc}</p>
             <div className="flex items-center space-x-2 mb-3">
                 <Switch
                 id="use-delay"
@@ -1180,7 +1188,7 @@ function AppDelaySettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_delay', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="use-delay">Use Delay in Downloads</Label>
+                <Label htmlFor="use-delay">{t.useDelayInDownloads}</Label>
             </div>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
@@ -1189,7 +1197,7 @@ function AppDelaySettings() {
                 onCheckedChange={(checked) => saveSettingsKey('use_search_delay', checked)}
                 disabled={useCustomCommands}
                 />
-                <Label htmlFor="use-search-delay">Use Delay in Search</Label>
+                <Label htmlFor="use-search-delay">{t.useDelayInSearch}</Label>
             </div>
             <RadioGroup
             orientation="horizontal"
@@ -1200,15 +1208,15 @@ function AppDelaySettings() {
             >
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="auto" id="delay-auto" />
-                    <Label htmlFor="delay-auto">Auto (Default)</Label>
+                    <Label htmlFor="delay-auto">{t.auto}</Label>
                 </div>
                 <div className="flex items-center gap-3">
                     <RadioGroupItem value="custom" id="delay-custom" />
-                    <Label htmlFor="delay-custom">Custom</Label>
+                    <Label htmlFor="delay-custom">{t.custom}</Label>
                 </div>
             </RadioGroup>
             <div className="flex flex-col gap-2 mt-5">
-                <Label className="text-xs mb-1">Minimum, Maximum Sleep Interval (in Seconds)</Label>
+                <Label className="text-xs mb-1">{t.minMaxSleepInterval}</Label>
                 <Form {...minMaxSleepIntervalForm}>
                     <form onSubmit={minMaxSleepIntervalForm.handleSubmit(handleMinMaxSleepIntervalSubmit)} className="flex gap-4 w-full" autoComplete="off">
                         <FormField
@@ -1220,7 +1228,7 @@ function AppDelaySettings() {
                                     <FormControl>
                                         <NumberInput
                                         className="w-full"
-                                        placeholder="Min sleep"
+                                        placeholder={t.minSleep}
                                         min={0}
                                         readOnly={useCustomCommands}
                                         {...field}
@@ -1239,7 +1247,7 @@ function AppDelaySettings() {
                                     <FormControl>
                                         <NumberInput
                                         className="w-full"
-                                        placeholder="Max sleep"
+                                        placeholder={t.maxSleep}
                                         min={0}
                                         readOnly={useCustomCommands}
                                         {...field}
@@ -1253,13 +1261,13 @@ function AppDelaySettings() {
                             type="submit"
                             disabled={(!watchedMinSleepInterval || Number(watchedMinSleepInterval) === minSleepInterval) && (!watchedMaxSleepInterval || Number(watchedMaxSleepInterval) === maxSleepInterval) || Object.keys(minMaxSleepIntervalFormErrors).length > 0 || delayMode !== "custom" || (!useDelay && !useSearchDelay)}
                         >
-                            Save
+                            {t.save}
                         </Button>
                     </form>
                 </Form>
             </div>
             <div className="flex flex-col gap-2 mt-4 mb-2">
-                <Label className="text-xs mb-1">Request Sleep Interval (in Seconds)</Label>
+                <Label className="text-xs mb-1">{t.requestSleepInterval} ({t.inSeconds})</Label>
                 <Form {...requestSleepIntervalForm}>
                     <form onSubmit={requestSleepIntervalForm.handleSubmit(handleRequestSleepIntervalSubmit)} className="flex gap-4 w-full" autoComplete="off">
                         <FormField
@@ -1271,7 +1279,7 @@ function AppDelaySettings() {
                                     <FormControl>
                                         <NumberInput
                                         className="w-full"
-                                        placeholder="Request sleep"
+                                        placeholder={t.requestSleep}
                                         min={0}
                                         readOnly={useCustomCommands}
                                         {...field}
@@ -1285,16 +1293,16 @@ function AppDelaySettings() {
                             type="submit"
                             disabled={!watchedRequestSleepInterval || Number(watchedRequestSleepInterval) === requestSleepInterval || Object.keys(requestSleepIntervalFormErrors).length > 0 || delayMode !== "custom" || (!useDelay && !useSearchDelay)}
                         >
-                            Save
+                            {t.save}
                         </Button>
                     </form>
                 </Form>
             </div>
-            <Label className="text-xs text-muted-foreground">(Configured: {minSleepInterval}s - {maxSleepInterval}s & {requestSleepInterval}s, Mode: {delayMode === 'auto' ? 'Auto' : 'Custom'}, Status: {useDelay && delayPlaylistOnly ? 'Playlist Only' : useDelay ? 'Downloads' : ''}{useDelay && useSearchDelay ? ', Search' : useSearchDelay ? 'Search' : !useDelay && !useSearchDelay ? 'Disabled' : ''}) (Default: 10s - 20s & 1s, Range: 1s - 3600s)</Label>
+            <Label className="text-xs text-muted-foreground">({t.configured}: {minSleepInterval}s - {maxSleepInterval}s & {requestSleepInterval}s, {t.mode}: {delayMode === 'auto' ? t.auto : t.custom}, {t.status}: {useDelay && delayPlaylistOnly ? t.playlistOnly : useDelay ? t.downloads : ''}{useDelay && useSearchDelay ? `, ${t.search}` : useSearchDelay ? t.search : !useDelay && !useSearchDelay ? t.disabled : ''}) ({t.default}: 10s - 20s & 1s, {t.range}: 1s - 3600s)</Label>
         </div>
         <div className="delay-playlist-only">
-            <h3 className="font-semibold">Delay Playlist Only</h3>
-            <p className="text-xs text-muted-foreground mb-3">Only apply delay for playlist/batch downloads, single video downloads will not be affected (recommended)</p>
+            <h3 className="font-semibold">{t.delayPlaylistOnly}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.delayPlaylistOnlyDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="delay-playlist-only"
@@ -1310,6 +1318,7 @@ function AppDelaySettings() {
 
 function AppPoTokenSettings() {
     // const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+    const { t } = useI18n();
 
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
     const acknowledgeFormReset = useSettingsPageStatesStore(state => state.acknowledgeFormReset);
@@ -1345,13 +1354,13 @@ function AppPoTokenSettings() {
                 await new Promise(resolve => setTimeout(resolve, 1000));
                 await startPotServer(values.port);
             }
-            toast.success("POT Server Port updated", {
-                description: `PO Token Server Port changed to ${values.port}`,
+            toast.success(t.potServerPortUpdated, {
+                description: `${t.potServerPortUpdatedDesc}${values.port}`,
             });
         } catch (error) {
             console.error("Error changing PO Token Server Port:", error);
-            toast.error("Failed to change POT Server Port", {
-                description: "An error occurred while trying to change the PO Token Server Port. Please try again.",
+            toast.error(t.potServerPortUpdateFailed, {
+                description: t.potServerPortUpdateFailedDesc,
             });
         } finally {
             setIsChangingPotServerPort(false);
@@ -1368,8 +1377,8 @@ function AppPoTokenSettings() {
     return (
         <>
         <div className="potoken">
-            <h3 className="font-semibold">PO Token</h3>
-            <p className="text-xs text-muted-foreground mb-3">Generate proof-of-origin token for youtube to make seem your traffic more legitimate (bypasses some bot-protection checks, sometimes requires cookies)</p>
+            <h3 className="font-semibold">{t.potTokenSettings}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.potTokenDesc}</p>
             <div className="flex items-center space-x-2 mb-2">
                 <Switch
                 id="use-potoken"
@@ -1384,7 +1393,7 @@ function AppPoTokenSettings() {
                 }}
                 disabled={useCustomCommands || isStartingPotServer || isChangingPotServerPort /*|| isFlatpak*/}
                 />
-                <Label htmlFor="use-potoken">Use PO Token</Label>
+                <Label htmlFor="use-potoken">{t.usePotToken}</Label>
             </div>
             <Label className="text-xs text-muted-foreground flex items-center">
                 <span className="mr-1">NeoDLP POT Server is</span>
@@ -1401,7 +1410,7 @@ function AppPoTokenSettings() {
             </Label>
         </div>
         <div className="disable-innertube">
-            <h3 className="font-semibold">Disable Innertube</h3>
+            <h3 className="font-semibold">{t.disableInnertube}</h3>
             <p className="text-xs text-muted-foreground mb-3">Disable the usage of innertube api for potoken generation (falls back to legacy mode, use only if normal potoken is not working)</p>
             <div className="flex items-center space-x-2">
                 <Switch
@@ -1427,13 +1436,13 @@ function AppPoTokenSettings() {
                                     <FormControl>
                                         <NumberInput
                                         className="w-full"
-                                        placeholder="Enter port number"
+                                        placeholder={t.enterPortNumber}
                                         min={0}
                                         readOnly={useCustomCommands}
                                         {...field}
                                         />
                                     </FormControl>
-                                    <Label htmlFor="port" className="text-xs text-muted-foreground">(Current: {potServerPort}) (Default: 4416, Range: 4000-5000)</Label>
+                                    <Label htmlFor="port" className="text-xs text-muted-foreground">({t.current}: {potServerPort}) ({t.default}: 4416, {t.range}: 4000-5000)</Label>
                                     <FormMessage />
                                 </FormItem>
                             )}
@@ -1445,10 +1454,10 @@ function AppPoTokenSettings() {
                             {isChangingPotServerPort ? (
                                 <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Changing
+                                {t.changing}
                                 </>
                             ) : (
-                                'Change'
+                                t.save
                             )}
                         </Button>
                     </form>
@@ -1461,6 +1470,7 @@ function AppPoTokenSettings() {
 
 function AppNotificationSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
 
@@ -1471,8 +1481,8 @@ function AppNotificationSettings() {
     return (
         <>
         <div className="notifications">
-            <h3 className="font-semibold">Desktop Notifications</h3>
-            <p className="text-xs text-muted-foreground mb-3">Enable desktop notifications for app events (updates, download completions, etc.)</p>
+            <h3 className="font-semibold">{t.notifications}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.notificationsDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="enable-notifications"
@@ -1484,8 +1494,8 @@ function AppNotificationSettings() {
                         if (!granted) {
                             const permission = await requestPermission();
                             if (permission !== 'granted') {
-                                toast.error("Notification Permission Denied", {
-                                    description: "You have denied the notification permission. Please enable it from your system settings to receive notifications.",
+                                toast.error(t.notificationPermissionDenied, {
+                                    description: t.notificationPermissionDeniedDesc,
                                 });
                                 return;
                             }
@@ -1494,10 +1504,10 @@ function AppNotificationSettings() {
                     saveSettingsKey('enable_notifications', checked)
                 }}
                 />
-                <Label htmlFor="enable-notifications">Enable Notifications</Label>
+                <Label htmlFor="enable-notifications">{t.enableNotifications}</Label>
             </div>
             <div className="flex flex-col gap-2 mt-5">
-                <Label className="text-xs mb-1">Notification Categories</Label>
+                <Label className="text-xs mb-1">{t.notificationCategories}</Label>
                 <div className="flex items-center space-x-2 mb-1">
                     <Switch
                     id="update-notification"
@@ -1505,7 +1515,7 @@ function AppNotificationSettings() {
                     onCheckedChange={(checked) => saveSettingsKey('update_notification', checked)}
                     disabled={!enableNotifications || isFlatpak}
                     />
-                    <Label htmlFor="update-notification">App Updates</Label>
+                    <Label htmlFor="update-notification">{t.appUpdates}</Label>
                 </div>
                 <div className="flex items-center space-x-2 mb-1">
                     <Switch
@@ -1514,7 +1524,7 @@ function AppNotificationSettings() {
                     onCheckedChange={(checked) => saveSettingsKey('download_completion_notification', checked)}
                     disabled={!enableNotifications || isFlatpak}
                     />
-                    <Label htmlFor="download-completion-notification">Download Completion</Label>
+                    <Label htmlFor="download-completion-notification">{t.downloadCompletion}</Label>
                 </div>
             </div>
         </div>
@@ -1524,6 +1534,7 @@ function AppNotificationSettings() {
 
 function AppCommandSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
     const { startPotServer, stopPotServer } = usePotServer();
 
     const formResetTrigger = useSettingsPageStatesStore(state => state.formResetTrigger);
@@ -1557,14 +1568,14 @@ function AppCommandSettings() {
             };
             const updatedCommands = [...customCommands, newCommand];
             saveSettingsKey('custom_commands', updatedCommands);
-            toast.success("Custom Command added", {
-                description: `Custom Command "${values.label}" added.`,
+            toast.success(t.customCommandAdded, {
+                description: `${t.customCommandAddedDesc}"${values.label}" added.`,
             });
             addCustomCommandForm.reset();
         } catch (error) {
             console.error("Error adding custom command:", error);
-            toast.error("Failed to add custom command", {
-                description: "An error occurred while trying to add the custom command. Please try again.",
+            toast.error(t.customCommandAddFailed, {
+                description: t.customCommandAddFailedDesc,
             });
         }
     }
@@ -1575,13 +1586,13 @@ function AppCommandSettings() {
             const updatedCommands = customCommands.filter(command => command.id !== commandId);
             saveSettingsKey('custom_commands', updatedCommands);
             setDownloadConfigurationKey('custom_command', null);
-            toast.success("Custom Command removed", {
-                description: `Custom Command "${removedCommand?.label}" removed.`,
+            toast.success(t.customCommandRemoved, {
+                description: t.customCommandRemovedDesc,
             });
         } catch (error) {
             console.error("Error removing custom command:", error);
-            toast.error("Failed to remove custom command", {
-                description: "An error occurred while trying to remove the custom command. Please try again.",
+            toast.error(t.customCommandRemoveFailed, {
+                description: t.customCommandRemoveFailedDesc,
             });
         }
     }
@@ -1596,13 +1607,13 @@ function AppCommandSettings() {
     return (
         <>
         <div className="custom-commands">
-            <h3 className="font-semibold">Custom Commands</h3>
-            <p className="text-xs text-muted-foreground mb-3"> Run custom yt-dlp commands for your downloads</p>
+            <h3 className="font-semibold">{t.customCommands}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.customCommandsDesc}</p>
             <Alert className="mb-3">
                 <TriangleAlert className="size-4 stroke-primary" />
-                <AlertTitle className="text-sm">Most Settings will be Disabled!</AlertTitle>
+                <AlertTitle className="text-sm">{t.mostSettingsDisabled}</AlertTitle>
                 <AlertDescription className="text-xs">
-                    This feature is intended for advanced users only. Turning it on will disable most other settings in the app. Make sure you know what you are doing before using this feature, otherwise things could break easily.
+                    {t.customCommandsWarning}
                 </AlertDescription>
             </Alert>
             <div className="flex items-center space-x-2 mb-4">
@@ -1619,7 +1630,7 @@ function AppCommandSettings() {
                     }
                 }}
                 />
-                <Label htmlFor="use-custom-commands">Use Custom Commands</Label>
+                <Label htmlFor="use-custom-commands">{t.useCustomCommands}</Label>
             </div>
             <div className="flex flex-col gap-2">
                 <Form {...addCustomCommandForm}>
@@ -1633,7 +1644,7 @@ function AppCommandSettings() {
                                     <FormControl>
                                         <Textarea
                                         className="focus-visible:ring-0 min-h-26"
-                                        placeholder="Enter yt-dlp command line arguments (no need to start with 'yt-dlp', already passed args: url, output paths, selected formats, selected subtitles, playlist items etc.)"
+                                        placeholder={t.customCommandsPlaceholder}
                                         {...field}
                                         />
                                     </FormControl>
@@ -1651,11 +1662,10 @@ function AppCommandSettings() {
                                         <FormControl>
                                             <Input
                                             className="focus-visible:ring-0"
-                                            placeholder="Enter template label"
+                                            placeholder={t.labelPlaceholder}
                                             {...field}
                                             />
                                         </FormControl>
-                                        {/* <Label htmlFor="label" className="text-xs text-muted-foreground">(Configured: {rateLimit ? `${rateLimit} = ${formatSpeed(rateLimit)}` : 'No'}, Status: {useRateLimit ? 'Enabled' : 'Disabled'}) (Default: 1048576, Range: 1024-104857600)</Label> */}
                                         <FormMessage />
                                     </FormItem>
                                 )}
@@ -1664,16 +1674,16 @@ function AppCommandSettings() {
                                 type="submit"
                                 disabled={!watchedLabel || !watchedArgs || Object.keys(addCustomCommandFormErrors).length > 0 || !useCustomCommands}
                             >
-                                Add
+                                {t.addCustomCommandBtn}
                             </Button>
                         </div>
                     </form>
                 </Form>
             </div>
             <div className="flex-flex-col gap-2 mt-4">
-                <Label className="text-xs mb-3">Custom Command Templates</Label>
+                <Label className="text-xs mb-3">{t.customCommandTemplates}</Label>
                 {customCommands.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">NO CUSTOM COMMAND TEMPLATE ADDED YET!</p>
+                    <p className="text-sm text-muted-foreground">{t.noCustomCommands}</p>
                 ) : (
                     <div className="flex flex-col gap-3 w-full mt-2">
                         {customCommands.map((command) => (
@@ -1706,6 +1716,7 @@ function AppCommandSettings() {
 
 function AppDebugSettings() {
     const { saveSettingsKey } = useSettings();
+    const { t } = useI18n();
 
     const debugMode = useSettingsPageStatesStore(state => state.settings.debug_mode);
     const logVerbose = useSettingsPageStatesStore(state => state.settings.log_verbose);
@@ -1714,18 +1725,18 @@ function AppDebugSettings() {
     return (
         <>
         <div className="debug-mode">
-            <h3 className="font-semibold">Debug Mode</h3>
-            <p className="text-xs text-muted-foreground mb-3">Enable debug mode for troubleshooting issues (get debug logs, download ids, and more)</p>
+            <h3 className="font-semibold">{t.debugSettings}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.debugSettingsDesc}</p>
             <div className="flex items-center space-x-2 mb-4">
                 <Switch
                 id="debug-mode"
                 checked={debugMode}
                 onCheckedChange={(checked) => saveSettingsKey('debug_mode', checked)}
                 />
-                <Label htmlFor="debug-mode">Enable Debug Mode</Label>
+                <Label htmlFor="debug-mode">{t.enableDebugMode}</Label>
             </div>
             <div className="flex flex-col gap-2 mt-5">
-                <Label className="text-xs mb-1">Logging Options</Label>
+                <Label className="text-xs mb-1">{t.loggingOptions}</Label>
                 <div className="flex items-center space-x-2 mb-1">
                     <Switch
                     id="log-verbose"
@@ -1733,7 +1744,7 @@ function AppDebugSettings() {
                     onCheckedChange={(checked) => saveSettingsKey('log_verbose', checked)}
                     disabled={!debugMode}
                     />
-                    <Label htmlFor="log-verbose">Verbose Logging</Label>
+                    <Label htmlFor="log-verbose">{t.verboseLogging}</Label>
                 </div>
                 <div className="flex items-center space-x-2 mb-1">
                     <Switch
@@ -1742,7 +1753,7 @@ function AppDebugSettings() {
                     onCheckedChange={(checked) => saveSettingsKey('log_progress', checked)}
                     disabled={!debugMode}
                     />
-                    <Label htmlFor="log-progress">Log Progress</Label>
+                    <Label htmlFor="log-progress">{t.logProgress}</Label>
                 </div>
             </div>
         </div>
@@ -1751,6 +1762,7 @@ function AppDebugSettings() {
 }
 
 function AppInfoSettings() {
+    const { t } = useI18n();
     const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
     const isAppimage = useEnvironmentStore(state => state.isAppimage);
 
@@ -1846,13 +1858,13 @@ function AppInfoSettings() {
                         <AvatarFallback>SB</AvatarFallback>
                     </Avatar>
                     <span className='absolute -bottom-1 -right-1.5'>
-                        <span className='sr-only'>Verified</span>
+                        <span className='sr-only'>{t.verified}</span>
                         <BadgeCheck className='text-background size-5 fill-primary' />
                     </span>
                 </div>
                 <div className="flex flex-col justify-center gap-1 m-0">
                     <span className="truncate font-semibold">{config.appAuthor}</span>
-                    <p className="text-xs text-muted-foreground">Full-Stack Developer</p>
+                    <p className="text-xs text-muted-foreground">{t.fullStackDeveloper}</p>
                 </div>
                 <div className="spacer grow"></div>
                 <Button variant="ghost" size="icon" className="p-5 m-0 border border-input" title="Official Website" asChild>
@@ -1862,74 +1874,68 @@ function AppInfoSettings() {
                 </Button>
                 <Button className="py-5" title="Buy Me a Coffee" asChild>
                     <a href={config.appAuthorSponsorUrl} target="_blank">
-                        <Heart className="size-4" /> Sponsor
+                        <Heart className="size-4" /> {t.sponsor}
                     </a>
                 </Button>
             </Card>
         </div>
         <div className="healthcheck">
-            <h3 className="font-semibold">Health Check</h3>
-            <p className="text-xs text-muted-foreground mb-3">Ensure everything is working fine</p>
+            <h3 className="font-semibold">{t.healthCheck}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.healthCheckDesc}</p>
             {isFlatpak ? (
                 <Alert className="">
                     <TriangleAlert className="size-4 stroke-primary" />
-                    <AlertTitle className="text-sm">Flatpak Sandbox Detected!</AlertTitle>
-                    <AlertDescription className="text-xs">
-                        It looks like you are running NeoDLP in a Flatpak sandbox. Some features like browser integration, desktop notifications, cookies, changing download folder, revealing completed downloads in explorer, and auto-launch on startup are not available in Flatpak due to sandbox restrictions. To use these features, please install the native linux build (DEB, RPM or AUR) of NeoDLP.
-                    </AlertDescription>
+                    <AlertTitle className="text-sm">{t.flatpakSandboxDetected}</AlertTitle>
+                    <AlertDescription className="text-xs">{t.flatpakSandboxDesc}</AlertDescription>
                 </Alert>
             ) : isAppimage ? (
                 <Alert className="">
                     <TriangleAlert className="size-4 stroke-primary" />
-                    <AlertTitle className="text-sm">Appimage Environment Detected!</AlertTitle>
-                    <AlertDescription className="text-xs">
-                        Looks like you are using NeoDLP Appimage. NeoDLP's browser integration features are not available on Appimage environment due to it's limitations. To use NeoDLP's browser integration features please install the native linux build (DEB, RPM or AUR) of NeoDLP.
-                    </AlertDescription>
+                    <AlertTitle className="text-sm">{t.appImageEnvDetected}</AlertTitle>
+                    <AlertDescription className="text-xs">{t.appImageEnvDesc}</AlertDescription>
                 </Alert>
             ) : (
                 <Alert className="">
                     <CircleCheck className="size-4 stroke-primary" />
-                    <AlertTitle className="text-sm">All Set! Cheers :)</AlertTitle>
-                    <AlertDescription className="text-xs">
-                        NeoDLP is running as normal without any limitations! You should be able to use all the features of NeoDLP without any issues. If you face any problem, feel free to report it to us.
-                    </AlertDescription>
+                    <AlertTitle className="text-sm">{t.allSet}</AlertTitle>
+                    <AlertDescription className="text-xs">{t.allSetDesc}</AlertDescription>
                 </Alert>
             )}
         </div>
         <div className="bug-report">
-            <h3 className="font-semibold">Bug Report</h3>
-            <p className="text-xs text-muted-foreground mb-3">Noticed any bug or inconsistencies? Report it to help us improve</p>
+            <h3 className="font-semibold">{t.bugReport}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.bugReportDesc}</p>
             <div className="report">
                 <span className="flex items-center gap-4 flex-wrap">
                     <Button className="px-4" variant="outline" size="sm" asChild>
                         <a href={'mailto:' + config.appSupportEmail + '?subject=[BUG]%20Title%20Here&body=Describe%20The%20Bug%20Here.%20Follow%20this%20issue%20template%3A%20https%3A%2F%2Fgithub.com%2Fneosubhamoy%2Fneodlp%2Fissues%2Fnew%3Ftemplate%3Dbug_report.md'} target="_blank" >
-                            <Mail className="size-4" /> Write Us an Email
+                            <Mail className="size-4" /> {t.writeAnEmail}
                         </a>
                     </Button>
                     <Button className="px-4" size="sm" asChild>
                         <a href={'https://github.com/' + config.appRepo + '/issues/new?template=bug_report.md'} target="_blank" >
-                            <Bug className="size-4" /> Create a GitHub Issue
+                            <Bug className="size-4" /> {t.createAGitHubIssue}
                         </a>
                     </Button>
                 </span>
             </div>
         </div>
         <div className="license-and-usage">
-            <h3 className="font-semibold">License and Usage</h3>
-            <p className="text-xs text-muted-foreground mb-3">License and usage terms of NeoDLP</p>
+            <h3 className="font-semibold">{t.licenseAndUsage}</h3>
+            <p className="text-xs text-muted-foreground mb-3">{t.licenseAndUsageDesc}</p>
             <div className="license">
-                <p className="text-sm mb-3">NeoDLP is a Fully Open-Source Software Licensed under the MIT license. Anyone can view, modify, use (personal and commercial) or distribute it's sources without any extra permission (Just include the LICENSE file :)</p>
-                <p className="text-sm mb-3"><TriangleAlert className="size-4 stroke-primary inline mb-1 mr-0.5" /> DISCLAIMER: NeoDLP facilitates downloading from various Online Platforms with different Policies and Terms of Use which Users must follow. We strictly do not promote any unauthorized downloading of copyrighted content. NeoDLP is only made for downloading content that the user holds the copyright to or has the authority for. Users must use the downloaded content wisely and solely at their own legal responsibility. The developer is not responsible for any action taken by the user, and takes zero direct or indirect liability for that matter.</p>
+                <p className="text-sm mb-3">{t.neoDlpIsFullyOpenSource}</p>
+                <p className="text-sm mb-3"><TriangleAlert className="size-4 stroke-primary inline mb-1 mr-0.5" /> {t.disclaimer}</p>
                 <span className="flex items-center gap-4 flex-wrap">
                     <Button className="px-4" variant="outline" size="sm" asChild>
                         <a href={'https://github.com/' + config.appRepo + '/blob/main/LICENSE'} target="_blank" >
-                            <Scale className="size-4" /> MIT License
+                            <Scale className="size-4" /> {t.mitLicense}
                         </a>
                     </Button>
                     <Dialog>
                         <DialogTrigger asChild>
                             <Button variant="outline" size="sm">
-                                <Package className="size-4" /> Dependencies
+                                <Package className="size-4" /> {t.dependencies}
                             </Button>
                         </DialogTrigger>
                         <DialogContent className="sm:max-w-150">
@@ -1938,15 +1944,15 @@ function AppInfoSettings() {
                                 <DialogDescription>Major dependencies of NeoDLP</DialogDescription>
                             </DialogHeader>
                             <div className="flex flex-col gap-4 max-h-[45vh] overflow-y-auto">
-                                <h4 className="text-sm font-semibold">External Binaries</h4>
+                                <h4 className="text-sm font-semibold">{t.externalBinaries}</h4>
                                 {binDepsList.map(({key, ...dep}) => (
                                     <DependencyItem key={key} {...dep} />
                                 ))}
-                                <h4 className="text-sm font-semibold">Languages, Frameworks & Tooling</h4>
+                                <h4 className="text-sm font-semibold">{t.languagesFrameworksTooling}</h4>
                                 {langDepsList.map(({key, ...dep}) => (
                                     <DependencyItem key={key} {...dep} />
                                 ))}
-                                <h4 className="text-sm font-semibold">Notable Libraries</h4>
+                                <h4 className="text-sm font-semibold">{t.notableLibraries}</h4>
                                 {libDepsList.map(({key, ...dep}) => (
                                     <DependencyItem key={key} {...dep} />
                                 ))}
@@ -1955,7 +1961,7 @@ function AppInfoSettings() {
                     </Dialog>
                     <Button size="sm" className="px-4" asChild>
                         <a href="https://github.com/yt-dlp/yt-dlp/blob/master/supportedsites.md" target="_blank" >
-                            <ExternalLink className="size-4" /> Supported Sites
+                            <ExternalLink className="size-4" /> {t.supportedSites}
                         </a>
                     </Button>
                 </span>
@@ -1967,6 +1973,7 @@ function AppInfoSettings() {
 
 export function ApplicationSettings() {
     // const isFlatpak = useEnvironmentStore(state => state.isFlatpak);
+    const { t } = useI18n();
 
     const activeSubAppTab = useSettingsPageStatesStore(state => state.activeSubAppTab);
     const setActiveSubAppTab = useSettingsPageStatesStore(state => state.setActiveSubAppTab);
@@ -1986,20 +1993,20 @@ export function ApplicationSettings() {
     const { updateYtDlp } = useYtDlpUpdater();
 
     const tabsList = [
-        { key: 'general', label: 'General', icon: Wrench, component: <AppGeneralSettings /> },
-        { key: 'appearance', label: 'Appearance', icon: WandSparkles, component: <AppAppearanceSettings /> },
-        { key: 'filesystem', label: 'Filesystem', icon: Folder, component: <AppFilesystemSettings /> },
-        { key: 'formats', label: 'Formats', icon: FileVideo, component: <AppFormatSettings /> },
-        { key: 'embedding', label: 'Embedding', icon: FilePen, component: <AppEmbeddingSettings /> },
-        { key: 'network', label: 'Network', icon: Wifi, component: <AppNetworkSettings /> },
-        { key: 'cookies', label: 'Cookies', icon: Cookie, component: <AppCookiesSettings /> },
-        { key: 'sponsorblock', label: 'Sponsorblock', icon: ShieldMinus, component: <AppSponsorblockSettings /> },
-        { key: 'delay', label: 'Delay', icon: Timer, component: <AppDelaySettings /> },
-        { key: 'potoken', label: 'Potoken', icon: KeyRound, component: <AppPoTokenSettings /> },
-        { key: 'notifications', label: 'Notifications', icon: BellRing, component: <AppNotificationSettings /> },
-        { key: 'commands', label: 'Commands', icon: SquareTerminal, component: <AppCommandSettings /> },
-        { key: 'debug', label: 'Debug', icon: Bug, component: <AppDebugSettings /> },
-        { key: 'info', label: 'Info', icon: Info, component: <AppInfoSettings /> },
+        { key: 'general', label: t.general, icon: Wrench, component: <AppGeneralSettings /> },
+        { key: 'appearance', label: t.appearance, icon: WandSparkles, component: <AppAppearanceSettings /> },
+        { key: 'filesystem', label: t.filesystem, icon: Folder, component: <AppFilesystemSettings /> },
+        { key: 'formats', label: t.format, icon: FileVideo, component: <AppFormatSettings /> },
+        { key: 'embedding', label: t.embed, icon: FilePen, component: <AppEmbeddingSettings /> },
+        { key: 'network', label: t.network, icon: Wifi, component: <AppNetworkSettings /> },
+        { key: 'cookies', label: t.cookies, icon: Cookie, component: <AppCookiesSettings /> },
+        { key: 'sponsorblock', label: t.sponsorblock, icon: ShieldMinus, component: <AppSponsorblockSettings /> },
+        { key: 'delay', label: t.delay, icon: Timer, component: <AppDelaySettings /> },
+        { key: 'potoken', label: t.potoken, icon: KeyRound, component: <AppPoTokenSettings /> },
+        { key: 'notifications', label: t.notifications, icon: BellRing, component: <AppNotificationSettings /> },
+        { key: 'commands', label: t.commands, icon: SquareTerminal, component: <AppCommandSettings /> },
+        { key: 'debug', label: t.debug, icon: Bug, component: <AppDebugSettings /> },
+        { key: 'info', label: t.info, icon: Info, component: <AppInfoSettings /> },
     ];
 
     return (
@@ -2017,7 +2024,7 @@ export function ApplicationSettings() {
                                 <ExternalLink className="size-3 text-muted-foreground hover:text-foreground" />
                             </a>
                         </h3>
-                        <p className="text-xs text-muted-foreground">Version: {isFetchingYtDlpVersion ? 'Loading...' : ytDlpVersion ?? 'unknown'}</p>
+                        <p className="text-xs text-muted-foreground">{t.version}: {isFetchingYtDlpVersion ? 'Loading...' : ytDlpVersion ?? 'unknown'}</p>
                     </div>
                 </div>
                 <div className="flex gap-4 items-center">
@@ -2028,7 +2035,7 @@ export function ApplicationSettings() {
                         // disabled={isFlatpak}
                         onCheckedChange={(checked) => saveSettingsKey('ytdlp_auto_update', checked)}
                         />
-                        <Label htmlFor="ytdlp-auto-update">Auto Update</Label>
+                        <Label htmlFor="ytdlp-auto-update">{t.autoUpdate}</Label>
                     </div>
                     <Select
                     value={ytDlpUpdateChannel}
@@ -2036,13 +2043,13 @@ export function ApplicationSettings() {
                     onValueChange={(value) => saveSettingsKey('ytdlp_update_channel', value)}
                     >
                         <SelectTrigger className="w-37.5 ring-0 focus:ring-0">
-                            <SelectValue placeholder="Select update channel" />
+                            <SelectValue placeholder={t.selectUpdateChannel} />
                         </SelectTrigger>
                         <SelectContent>
                             <SelectGroup>
-                                <SelectLabel>Update Channels</SelectLabel>
-                                <SelectItem value="stable">Stable</SelectItem>
-                                <SelectItem value="nightly">Nightly</SelectItem>
+                                <SelectLabel>{t.updateChannels}</SelectLabel>
+                                <SelectItem value="stable">{t.stable}</SelectItem>
+                                <SelectItem value="nightly">{t.nightly}</SelectItem>
                             </SelectGroup>
                         </SelectContent>
                     </Select>
@@ -2053,11 +2060,11 @@ export function ApplicationSettings() {
                         {isUpdatingYtDlp ? (
                             <>
                                 <Loader2 className="h-4 w-4 animate-spin" />
-                                Updating
+                                {t.updating}
                             </>
                         ) : (
                             <>
-                                Update
+                                {t.update}
                             </>
                         )}
                     </Button>

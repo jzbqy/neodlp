@@ -10,8 +10,10 @@ import { useLogger } from "@/helpers/use-logger";
 import { writeText } from "@tauri-apps/plugin-clipboard-manager";
 import TitleBar from "@/components/titlebar";
 import { platform } from "@tauri-apps/plugin-os";
+import { useI18n } from "@/i18n/i18nProvider";
 
 export default function Navbar() {
+    const { t } = useI18n();
     const [copied, setCopied] = useState(false);
     const location = useLocation();
     const currentPlatform = platform();
@@ -48,17 +50,17 @@ export default function Navbar() {
                                 </DialogTrigger>
                             </TooltipTrigger>
                             <TooltipContent side="bottom">
-                                <p>Logs</p>
+                                <p>{t.logs}</p>
                             </TooltipContent>
                         </Tooltip>
                         <DialogContent className="sm:max-w-150">
                             <DialogHeader>
-                                <DialogTitle>Log Viewer</DialogTitle>
-                                <DialogDescription>Monitor real-time app session logs (latest on top)</DialogDescription>
+                                <DialogTitle>{t.logViewer}</DialogTitle>
+                                <DialogDescription>{t.monitorRealtimeAppLogs}</DialogDescription>
                             </DialogHeader>
                             <div className="flex flex-col gap-2 p-2 max-h-75 overflow-y-scroll overflow-x-hidden bg-muted">
                                 {logs.length === 0 ? (
-                                    <p className="text-sm text-muted-foreground">NO LOGS TO SHOW!</p>
+                                    <p className="text-sm text-muted-foreground">{t.noLogsToShow}</p>
                                 ) : (
                                     logs.slice().reverse().map((log, index) => (
                                         <div key={index} className={`flex flex-col ${log.level === 'error' ? 'text-red-500' : log.level === 'warning' ? 'text-amber-500' : log.level === 'debug' ? 'text-sky-500' : log.level === 'progress' ? 'text-emerald-500' : 'text-foreground'}`}>
@@ -75,7 +77,7 @@ export default function Navbar() {
                                 onClick={() => logger.clearLogs()}
                                 >
                                     <BrushCleaning className="size-4" />
-                                    Clear Logs
+                                    {t.clearLogs}
                                 </Button>
                                 <Button
                                 className="transition-all duration-300"
@@ -87,7 +89,7 @@ export default function Navbar() {
                                     ) : (
                                         <Copy className="size-4" />
                                     )}
-                                    Copy Logs
+                                    {t.copyLogs}
                                 </Button>
                             </DialogFooter>
                         </DialogContent>

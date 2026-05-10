@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import { useLogger } from "@/helpers/use-logger";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import PaginationBar from "@/components/custom/paginationBar";
+import { useI18n } from "@/i18n/i18nProvider";
 
 interface CompletedDownloadProps {
     state: DownloadState;
@@ -30,6 +31,7 @@ interface CompletedDownloadsProps {
 }
 
 export function CompletedDownload({ state }: CompletedDownloadProps) {
+    const { t } = useI18n();
     const downloadActions = useDownloadActionStatesStore(state => state.downloadActions);
     const setIsDeleteFileChecked = useDownloadActionStatesStore(state => state.setIsDeleteFileChecked);
 
@@ -44,29 +46,34 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
         if (filePath && await fs.exists(filePath)) {
             try {
                 await invoke('open_file_with_app', { filePath: filePath, appName: app }).then(() => {
-                    toast.info(`${app === 'explorer' ? 'Revealing' : 'Opening'} file`, {
-                        description: `${app === 'explorer' ? 'Revealing' : 'Opening'} the file ${app === 'explorer' ? 'in' : 'with'} ${app ? app : 'default app'}.`,
+                    const isReveal = app === 'explorer';
+                    const appName = app ? app : 'default app';
+                    toast.info(isReveal ? t.revealingFile : t.openingFile, {
+                        description: isReveal ? t.revealingFileDesc.replace('{app}', appName) : t.openingFileDesc.replace('{app}', appName),
                     })
                 });
             } catch (e) {
                 console.error(e);
-                toast.error(`Failed to ${app === 'explorer' ? 'reveal' : 'open'} file`, {
-                    description: `An error occurred while trying to ${app === 'explorer' ? 'reveal' : 'open'} the file.`,
+                const isReveal = app === 'explorer';
+                toast.error(isReveal ? t.failedToRevealFile : t.failedToOpenFile, {
+                    description: isReveal ? t.failedToRevealFileDesc : t.failedToOpenFileDesc,
                 })
             }
         } else {
-            toast.info("File unavailable", {
-                description: `The file you are trying to ${app === 'explorer' ? 'reveal' : 'open'} does not exist.`,
+            const isReveal = app === 'explorer';
+            const action = isReveal ? 'reveal' : 'open';
+            toast.info(t.fileUnavailable, {
+                description: t.fileUnavailableDesc.replace('{action}', action),
             })
         }
     }
 
     const removeFromDownloads = async (downloadState: DownloadState, delete_file: boolean) => {
-        if (delete_file && downloadState.filepath) {
-            const isMultiplePlaylistItems = downloadState.playlist_id !== null &&
-                downloadState.playlist_indices !== null &&
-                downloadState.playlist_indices.includes(',');
+        const isMultiplePlaylistItems = downloadState.playlist_id !== null &&
+            downloadState.playlist_indices !== null &&
+            downloadState.playlist_indices.includes(',');
 
+        if (delete_file && downloadState.filepath) {
             if (isMultiplePlaylistItems) {
                 const dirPath = await dirname(downloadState.filepath);
                 try {
@@ -91,29 +98,32 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
             }
         }
 
+        const prefix = isMultiplePlaylistItems ? 'playlist ' : '';
+        const title = isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title;
+
         downloadStateDeleter.mutate(downloadState.download_id, {
             onSuccess: (data) => {
                 console.log("Download State deleted successfully:", data);
                 queryClient.invalidateQueries({ queryKey: ['download-states'] });
                 if (delete_file  && downloadState.filepath) {
-                    toast.success("Deleted from downloads", {
-                        description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been deleted successfully.`,
+                    toast.success(t.deletedFromDownloads, {
+                        description: t.deletedFromDownloadsDesc.replace('{prefix}', prefix).replace('{title}', title),
                     });
                 } else {
-                    toast.success("Removed from downloads", {
-                        description: `The download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}" has been removed successfully.`,
+                    toast.success(t.removedFromDownloads, {
+                        description: t.removedFromDownloadsDesc.replace('{prefix}', prefix).replace('{title}', title),
                     });
                 }
             },
             onError: (error) => {
                 console.error("Failed to delete download state:", error);
                 if (delete_file  && downloadState.filepath) {
-                    toast.error("Failed to delete download", {
-                        description: `An error occurred while trying to delete the download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
+                    toast.error(t.failedToDeleteDownload, {
+                        description: t.failedToDeleteDownloadDesc.replace('{prefix}', prefix).replace('{title}', title),
                     });
                 } else {
-                    toast.error("Failed to remove download", {
-                        description: `An error occurred while trying to remove the download for ${isMultiplePlaylistItems ? 'playlist ' : ''}"${isMultiplePlaylistItems ? downloadState.playlist_title : downloadState.title}".`,
+                    toast.error(t.failedToRemoveDownload, {
+                        description: t.failedToRemoveDownloadDesc.replace('{prefix}', prefix).replace('{title}', title),
                     });
                 }
             }
@@ -127,13 +137,13 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
             const { setRequestedUrl, setAutoSubmitSearch } = useCurrentVideoMetadataStore.getState();
             setRequestedUrl(url);
             setAutoSubmitSearch(true);
-            toast.info(`Initiating ${isPlaylist ? 'Playlist' : 'Video'} Search`, {
-                description: `Initiating search for the selected ${isPlaylist ? 'playlist' : 'video'}.`,
+            toast.info(isPlaylist ? t.initiatingPlaylistSearch : t.initiatingVideoSearch, {
+                description: t.initiatingSearchDesc.replace('{type}', isPlaylist ? t.playlist : t.video),
             });
         } catch (e) {
             console.error(e);
-            toast.error("Failed to initiate search", {
-                description: "An error occurred while trying to initiate the search.",
+            toast.error(t.failedToInitiateSearch, {
+                description: t.failedToInitiateSearchDesc,
             });
         }
     }
@@ -171,7 +181,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                 )}
                 {isMultiplePlaylistItems ? (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
-                        <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> Playlist ({state.playlist_indices?.split(',').length})
+                        <ListVideo className="w-4 h-4 mr-2 stroke-primary" /> {t.playlist} ({state.playlist_indices?.split(',').length})
                     </span>
                 ) : (
                     <span className="w-full flex items-center justify-center text-xs border border-border py-1 px-2 rounded">
@@ -184,20 +194,20 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
                             <File className="w-4 h-4 mr-2 stroke-primary" />
                         )}
-                        {state.ext ? state.ext.toUpperCase() : 'Unknown'} {state.resolution ? `(${state.resolution})` : null}
+                        {state.ext ? state.ext.toUpperCase() : t.unknown} {state.resolution ? `(${state.resolution})` : null}
                     </span>
                 )}
             </div>
             <div className="w-full flex flex-col justify-between gap-2">
                 <div className="flex flex-col gap-1">
                     <h4 className="">{isMultiplePlaylistItems ? state.playlist_title : state.title}</h4>
-                    <p className="text-xs text-muted-foreground">{isMultiplePlaylistItems ? state.playlist_channel ?? 'unknown' : state.channel ?? 'unknown'} {state.host ? <><span className="text-primary">•</span> {state.host}</> : 'unknown'}</p>
+                    <p className="text-xs text-muted-foreground">{isMultiplePlaylistItems ? state.playlist_channel ?? t.unknown : state.channel ?? t.unknown} {state.host ? <><span className="text-primary">•</span> {state.host}</> : t.unknown}</p>
                     <div className="flex items-center mt-1">
                         <span className="text-xs text-muted-foreground flex items-center pr-3">
                             {isMultiplePlaylistItems ? (
-                                <><ListVideo className="w-4 h-4 mr-2"/> {state.playlist_n_entries ?? 'unknown'}</>
+                                <><ListVideo className="w-4 h-4 mr-2"/> {state.playlist_n_entries ?? t.unknown}</>
                             ) : (
-                                <><Clock className="w-4 h-4 mr-2"/> {state.duration_string ? formatDurationString(state.duration_string) : 'unknown'}</>
+                                <><Clock className="w-4 h-4 mr-2"/> {state.duration_string ? formatDurationString(state.duration_string) : t.unknown}</>
                             )}
                         </span>
                         <Separator orientation="vertical" />
@@ -211,7 +221,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         {(!state.filetype) || (state.filetype && state.filetype !== 'video' && state.filetype !== 'audio' && state.filetype !== 'video+audio') && (
                             <FileQuestion className="w-4 h-4 mr-2" />
                         )}
-                        {state.filesize ? formatFileSize(state.filesize) : 'unknown'}
+                        {state.filesize ? formatFileSize(state.filesize) : t.unknown}
                         </span>
                         <Separator orientation="vertical" />
                         <span className="text-xs text-muted-foreground flex items-center pl-3"><AudioLines className="w-4 h-4 mr-2"/>
@@ -222,7 +232,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         ) : state.abr ? (
                             formatBitrate(state.abr)
                         ) : (
-                            'unknown'
+                            t.unknown
                         )}
                         </span>
                     </div>
@@ -230,9 +240,9 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         {state.playlist_id && state.playlist_indices && !isMultiplePlaylistItems && (
                             <span
                             className="border border-border py-1 px-2 rounded flex items-center cursor-pointer"
-                            title={`${state.playlist_title ?? 'UNKNOWN PLAYLIST'}` + ' by ' + `${state.playlist_channel ?? 'UNKNOWN CHANNEL'}`}
+                            title={`${state.playlist_title ?? t.unknownPlaylist}` + ' by ' + `${state.playlist_channel ?? t.unknownChannel}`}
                             >
-                                <ListVideo className="w-4 h-4 mr-2" /> Playlist ({state.playlist_indices} of {state.playlist_n_entries})
+                                <ListVideo className="w-4 h-4 mr-2" /> {t.playlist} ({state.playlist_indices} of {state.playlist_n_entries})
                             </span>
                         )}
                         {state.vcodec && !isMultiplePlaylistItems && (
@@ -242,7 +252,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                             <span className="border border-border py-1 px-2 rounded">{formatCodec(state.acodec)}</span>
                         )}
                         {isMultipleAudioFormatSelected && (
-                            <span className="border border-border py-1 px-2 rounded">MULTIAUDIO</span>
+                            <span className="border border-border py-1 px-2 rounded">{t.multiaudio}</span>
                         )}
                         {state.dynamic_range && state.dynamic_range !== 'SDR' && !isMultiplePlaylistItems && (
                             <span className="border border-border py-1 px-2 rounded">{state.dynamic_range}</span>
@@ -250,7 +260,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         {state.subtitle_id && (
                             <span
                             className="border border-border py-1 px-2 rounded cursor-pointer"
-                            title={`EMBEDED SUBTITLE (${state.subtitle_id})`}
+                            title={t.embeddedSubtitle.replace('{id}', state.subtitle_id)}
                             >
                                 ESUB
                             </span>
@@ -258,7 +268,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         {state.sponsorblock_mark && (
                             <span
                             className="border border-border py-1 px-2 rounded cursor-pointer"
-                            title={`SPONSORBLOCK MARKED (${state.sponsorblock_mark})`}
+                            title={t.sponsorblockMarked.replace('{type}', state.sponsorblock_mark)}
                             >
                                 SPBLOCK(M)
                             </span>
@@ -266,7 +276,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                         {state.sponsorblock_remove && (
                             <span
                             className="border border-border py-1 px-2 rounded cursor-pointer"
-                            title={`SPONSORBLOCK REMOVED (${state.sponsorblock_remove})`}
+                            title={t.sponsorblockRemoved.replace('{type}', state.sponsorblock_remove)}
                             >
                                 SPBLOCK(R)
                             </span>
@@ -276,43 +286,43 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
                 <div className="w-full flex items-center gap-2">
                     <Button size="sm" onClick={() => openFile(state.filepath, null)}>
                         <Play className="w-4 h-4" />
-                        Open
+                        {t.open}
                     </Button>
                     {!isFlatpak && (
                         <Button size="sm" variant="outline" onClick={() => openFile(state.filepath, 'explorer')}>
                             <FolderInput className="w-4 h-4" />
-                            Reveal
+                            {t.reveal}
                         </Button>
                     )}
                     <Button size="sm" variant="outline" onClick={() => handleSearch(state.url, state.playlist_id ? true : false)}>
                         <Search className="w-4 h-4" />
-                        Search
+                        {t.search}
                     </Button>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
                             <Button size="sm" variant="destructive">
                                 <Trash2 className="w-4 h-4" />
-                                Remove
+                                {t.remove}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Remove from library?</AlertDialogTitle>
+                                <AlertDialogTitle>{t.removeFromLibrary}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Are you sure you want to remove this download from the library? You can also delete the downloaded file by cheking the box below. This action cannot be undone.
+                                    {t.removeFromLibraryDesc}
                                 </AlertDialogDescription>
                                 <div className="flex items-center space-x-2">
                                     <Checkbox id="delete-file" checked={itemActionStates.isDeleteFileChecked} onCheckedChange={() => {setIsDeleteFileChecked(state.download_id, !itemActionStates.isDeleteFileChecked)}} />
-                                    <Label htmlFor="delete-file">Delete the downloaded file</Label>
+                                    <Label htmlFor="delete-file">{t.deleteDownloadedFile}</Label>
                                 </div>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
                                 <AlertDialogAction onClick={
                                     () => removeFromDownloads(state, itemActionStates.isDeleteFileChecked).then(() => {
                                         setIsDeleteFileChecked(state.download_id, false);
                                     })
-                                }>Remove</AlertDialogAction>
+                                }>{t.remove}</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
@@ -323,6 +333,7 @@ export function CompletedDownload({ state }: CompletedDownloadProps) {
 }
 
 export function CompletedDownloads({ downloads }: CompletedDownloadsProps) {
+    const { t } = useI18n();
     const activeCompletedDownloadsPage = useLibraryPageStatesStore(state => state.activeCompletedDownloadsPage);
     const setActiveCompletedDownloadsPage = useLibraryPageStatesStore(state => state.setActiveCompletedDownloadsPage);
 
@@ -358,9 +369,9 @@ export function CompletedDownloads({ downloads }: CompletedDownloadsProps) {
                         <EmptyMedia variant="icon">
                             <CircleArrowDown className="stroke-primary" />
                         </EmptyMedia>
-                        <EmptyTitle>No Completed Downloads</EmptyTitle>
+                        <EmptyTitle>{t.noCompletedDownloads}</EmptyTitle>
                         <EmptyDescription>
-                        You have not completed any downloads yet! Complete downloading something to see here :)
+                        {t.noCompletedDownloadsDesc}
                         </EmptyDescription>
                     </EmptyHeader>
                     <Button
@@ -369,7 +380,7 @@ export function CompletedDownloads({ downloads }: CompletedDownloadsProps) {
                         size="sm"
                         onClick={() => navigate("/")}
                     >
-                        Spin Up a New Download  <ArrowUpRightIcon />
+                        {t.spinUpNewDownload}  <ArrowUpRightIcon />
                     </Button>
                 </Empty>
             )}

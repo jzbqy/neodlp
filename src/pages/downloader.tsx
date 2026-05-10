@@ -19,6 +19,7 @@ import { useTheme } from "@/providers/themeProvider";
 import { VideoDownloader } from "@/components/pages/downloader/videoDownloader";
 import { PlaylistDownloader } from "@/components/pages/downloader/playlistDownloader";
 import { BottomBar } from "@/components/pages/downloader/bottomBar";
+import { useI18n } from "@/i18n/i18nProvider";
 
 const searchFormSchema = z.object({
     url: z.url({
@@ -31,6 +32,7 @@ const searchFormSchema = z.object({
 export default function DownloaderPage() {
     const { fetchVideoMetadata } = useAppContext();
     const { setTheme } = useTheme();
+    const { t } = useI18n();
 
     const videoUrl = useCurrentVideoMetadataStore((state) => state.videoUrl);
     const videoMetadata = useCurrentVideoMetadataStore((state) => state.videoMetadata);
@@ -195,8 +197,8 @@ export default function DownloaderPage() {
             if (!metadata || (metadata._type !== 'video' && metadata._type !== 'playlist') || (metadata && metadata._type === 'video' && metadata.formats.length <= 0) || (metadata && metadata._type === 'playlist' && metadata.entries.length <= 0)) {
                 const showSearchError = useCurrentVideoMetadataStore.getState().showSearchError;
                 if (showSearchError) {
-                    toast.error("Oops! No results found", {
-                        description: "The provided URL does not contain any downloadable content or you are not connected to the internet. Please check the URL, your network connection and try again.",
+                    toast.error(t.noResultsFound, {
+                        description: t.noResultsFoundDesc,
                     });
                 }
             }
@@ -250,16 +252,16 @@ export default function DownloaderPage() {
                         // If URL is invalid, just reset the flag
                         setAutoSubmitSearch(false);
                         setRequestedUrl('');
-                        toast.error("Invalid URL", {
-                            description: "The provided URL is not valid.",
+                        toast.error(t.invalidUrl, {
+                            description: t.invalidUrlDesc,
                         });
                     }
                 } else {
                     // If metadata is loading, just reset the flag
                     setAutoSubmitSearch(false);
                     setRequestedUrl('');
-                    toast.info("Search in progress", {
-                        description: "There's a search in progress, Please try again later.",
+                    toast.info(t.searchInProgress, {
+                        description: t.searchInProgressDesc,
                     });
                 }
             } else {
@@ -282,7 +284,7 @@ export default function DownloaderPage() {
         <div className="container mx-auto p-4 space-y-4 relative" ref={containerRef}>
             <Card className="gap-4">
                 <CardHeader>
-                    <CardTitle className="flex items-center"><PackageSearch className="size-5 mr-3 stroke-primary" />{config.appName} Search</CardTitle>
+                    <CardTitle className="flex items-center"><PackageSearch className="size-5 mr-3 stroke-primary" />{config.appName} {t.searchTitle}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Form {...searchForm}>
@@ -296,7 +298,7 @@ export default function DownloaderPage() {
                                         <FormControl>
                                             <Input
                                             className="focus-visible:ring-0"
-                                            placeholder="Enter Video/Playlist URL to Download"
+                                            placeholder={t.enterVideoPlaylistUrl}
                                             {...field}
                                             />
                                         </FormControl>
@@ -355,10 +357,10 @@ export default function DownloaderPage() {
                                 {isMetadataLoading ? (
                                     <>
                                     <Loader2 className="h-4 w-4 animate-spin" />
-                                    Searching
+                                    {t.searching}
                                     </>
                                 ) : (
-                                    'Search'
+                                    t.search
                                 )}
                             </Button>
                         </form>

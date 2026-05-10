@@ -11,6 +11,7 @@ import { getMergedBestFormat } from "@/utils";
 import { Switch } from "@/components/ui/switch";
 import { FormatToggleGroup, FormatToggleGroupItem } from "@/components/custom/formatToggleGroup";
 import { Layout } from "react-resizable-panels";
+import { useI18n } from "@/i18n/i18nProvider";
 
 interface PlaylistPreviewSelectionProps {
     videoMetadata: RawVideoInfo;
@@ -41,6 +42,7 @@ interface PlaylistDownloaderProps {
 }
 
 function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionProps) {
+    const { t } = useI18n();
     const selectedPlaylistVideos = useDownloaderPageStatesStore((state) => state.selectedPlaylistVideos);
     const setSelectedDownloadFormat = useDownloaderPageStatesStore((state) => state.setSelectedDownloadFormat);
     const setSelectedCombinableVideoFormat = useDownloaderPageStatesStore((state) => state.setSelectedCombinableVideoFormat);
@@ -57,7 +59,7 @@ function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionPro
             <div className="flex items-center justify-between mb-4 mt-2">
                 <h3 className="text-sm flex items-center gap-2">
                     <ListVideo className="w-4 h-4" />
-                    <span>Playlist ({videoMetadata.entries[0].n_entries})</span>
+                    <span>{t.playlist} ({videoMetadata.entries[0].n_entries})</span>
                 </h3>
                 <div className="flex items-center space-x-2">
                     <Switch
@@ -107,7 +109,7 @@ function PlaylistPreviewSelection({ videoMetadata }: PlaylistPreviewSelectionPro
                 </PlaylistToggleGroup>
                 <div className="flex items-center text-muted-foreground">
                     <Info className="w-3 h-3 mr-2" />
-                    <span className="text-xs">Extracted from {videoMetadata.entries[0].extractor ? videoMetadata.entries[0].extractor.charAt(0).toUpperCase() + videoMetadata.entries[0].extractor.slice(1) : 'Unknown'}</span>
+                    <span className="text-xs">{t.extractedFrom} {videoMetadata.entries[0].extractor ? videoMetadata.entries[0].extractor.charAt(0).toUpperCase() + videoMetadata.entries[0].extractor.slice(1) : t.statusUnknown}</span>
                 </div>
                 <div className="spacer mb-12"></div>
             </div>

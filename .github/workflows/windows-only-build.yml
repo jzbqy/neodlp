@@ -105,40 +105,56 @@ jobs:
             
             Write-Host "Looking for build artifacts..."
             
-            $bundleDirs = @(Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release/bundle" -Recurse -Directory -ErrorAction SilentlyContinue)
+            # Find NSIS bundle (which has the portable structure we need)
+            $nsisBundleDirs = @(Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis" -Directory -ErrorAction SilentlyContinue)
             
-            if ($bundleDirs) {
-                Write-Host "Found bundle dir: $($bundleDirs[0].FullName)"
+            if ($nsisBundleDirs) {
+                Write-Host "Found NSIS bundle dirs"
                 
-                # Find the MSI or NSIS directory
-                $bundlePath = $null
+                # Find the unzipped portable dir or the exe to copy
+                $portableDir = Join-Path -Path $env:RUNNER_TEMP -ChildPath "neodlp-portable"
+                New-Item -ItemType Directory -Path $portableDir -Force
                 
-                # Try to find the main exe in any bundle folder
-                $bundleExe = Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release" -Filter "neodlp.exe" -ErrorAction SilentlyContinue
+                # Check for .nsis.7z or similar that has the full package
+                # Let's just copy the main exe and necessary files for a minimal portable build
+                Write-Host "Copying main executable..."
                 
-                if ($bundleExe) {
-                    Write-Host "Found main exe: $($bundleExe.FullName)"
+                $mainExe = Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release" -Filter "neodlp.exe" -ErrorAction SilentlyContinue
+                if ($mainExe) {
+                    Copy-Item -Path $mainExe.FullName -Destination $portableDir
                     
-                    # Create a temporary folder for portable build
-                    $portableDir = Join-Path -Path $env:RUNNER_TEMP -ChildPath "neodlp-portable"
-                    New-Item -ItemType Directory -Path $portableDir -Force
+                    # Also copy the bundle/nsis/NeoDLP... dir contents if it exists
+                    $nsisDirs = Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release/bundle/nsis" -Directory -Filter "*NeoDLP*" -ErrorAction SilentlyContinue
                     
-                    # Copy all files
-                    Copy-Item -Path "src-tauri/target/x86_64-pc-windows-msvc/release" -Destination $portableDir -Recurse
+                    if ($nsisDirs) {
+                        Write-Host "Copying bundle contents from: $($nsisDirs[0].FullName)"
+                        Copy-Item -Path "$($nsisDirs[0].FullName)\*" -Destination $portableDir -Recurse
+                    } else {
+                        # Just copy whatever else we have in the release dir
+                        Write-Host "Copying other files..."
+                        Get-ChildItem -Path "src-tauri/target/x86_64-pc-windows-msvc/release" -File -ErrorAction SilentlyContinue | Where-Object {
+                            $_.Extension -ne ".exe" -or $_.Name -eq "neodlp.exe"
+                        } | Copy-Item -Destination $portableDir
+                    }
                     
-                    Write-Host "Created portable directory: $portableDir"
-                    Get-ChildItem -Path $portableDir -Recurse
+                    Write-Host "Portable directory contents:"
+                    Get-ChildItem -Path $portableDir -Recurse | Select-Object FullName, Length
                     
                     Compress-Archive -Path "$portableDir\*" -DestinationPath $portableZipPath -Force
                     
                     if (Test-Path $portableZipPath) {
-                        Write-Host "Portable zip created successfully at: $portableZipPath"
+                        $fileSize = (Get-Item $portableZipPath).Length / 1MB
+                        Write-Host "Portable zip created successfully at: $portableZipPath (Size: $([math]::Round($fileSize, 2)) MB)"
                         "portable_zip_path=$portableZipPath" >> $env:GITHUB_OUTPUT
                         "portable_zip_name=$portableZipName" >> $env:GITHUB_OUTPUT
                     } else {
                         Write-Host "Failed to create portable zip"
                     }
+                } else {
+                    Write-Host "Main exe not found!"
                 }
+            } else {
+                Write-Host "No NSIS bundles found!"
             }
 
       - name: 📤 Upload Portable Zip to Release

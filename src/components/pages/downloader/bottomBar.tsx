@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useI18n } from "@/i18n/i18nProvider";
 
 interface DownloadConfigDialogProps {
     selectedFormatFileType: "video+audio" | "video" | "audio" | "unknown";
@@ -29,6 +30,7 @@ interface BottomBarProps {
 }
 
 function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogProps) {
+    const { t } = useI18n();
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
     const activeDownloadConfigurationTab = useDownloaderPageStatesStore((state) => state.activeDownloadConfigurationTab);
     const selectedDownloadFormat = useDownloaderPageStatesStore((state) => state.selectedDownloadFormat);
@@ -62,13 +64,13 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                     </DialogTrigger>
                 </TooltipTrigger>
                 <TooltipContent>
-                <p>Configurations</p>
+                <p>{t.configurations}</p>
                 </TooltipContent>
             </Tooltip>
             <DialogContent className="sm:max-w-112.5">
                 <DialogHeader>
-                    <DialogTitle>Configurations</DialogTitle>
-                    <DialogDescription>Tweak this download's configurations</DialogDescription>
+                    <DialogTitle>{t.configurations}</DialogTitle>
+                    <DialogDescription>{t.tweakDownloadConfigurations}</DialogDescription>
                 </DialogHeader>
                 <div className="flex flex-col gap-2 max-h-75 overflow-y-scroll overflow-x-hidden no-scrollbar">
                     <Tabs
@@ -77,21 +79,21 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                     onValueChange={(tab) => setActiveDownloadConfigurationTab(tab)}
                     >
                         <TabsList>
-                            <TabsTrigger value="options">Options</TabsTrigger>
-                            <TabsTrigger value="commands">Commands</TabsTrigger>
+                            <TabsTrigger value="options">{t.options}</TabsTrigger>
+                            <TabsTrigger value="commands">{t.commands}</TabsTrigger>
                         </TabsList>
                         <TabsContent value="options">
                             {useCustomCommands ? (
                             <Alert className="mt-2 mb-3">
                                 <AlertCircleIcon className="size-4 stroke-primary" />
-                                <AlertTitle className="text-sm">Options Unavailable!</AlertTitle>
+                                <AlertTitle className="text-sm">{t.optionsUnavailable}</AlertTitle>
                                 <AlertDescription className="text-xs">
-                                    You cannot use these options when custom commands are enabled. To use these options, disable custom commands from Settings.
+                                    {t.optionsUnavailableDesc}
                                 </AlertDescription>
                             </Alert>
                             ) : null}
                             <div className="video-format">
-                                <Label className="text-xs mb-3 mt-2">Output Format ({(selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? 'Video' : selectedFormatFileType && selectedFormatFileType === 'audio' ? 'Audio' : 'Unknown'})</Label>
+                                <Label className="text-xs mb-3 mt-2">{t.outputFormat} ({(selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? t.video : selectedFormatFileType && selectedFormatFileType === 'audio' ? t.audio : t.unknown})</Label>
                                 {(selectedFormatFileType && (selectedFormatFileType === 'video' || selectedFormatFileType === 'video+audio')) || activeDownloadModeTab === 'combine' ? (
                                     <RadioGroup
                                     orientation="horizontal"
@@ -102,7 +104,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="auto" id="v-auto" />
-                                            <Label htmlFor="v-auto">Follow Settings</Label>
+                                            <Label htmlFor="v-auto">{t.followSettings}</Label>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="mp4" id="v-mp4" />
@@ -127,7 +129,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
                                     >
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="auto" id="a-auto" />
-                                            <Label htmlFor="a-auto">Follow Settings</Label>
+                                            <Label htmlFor="a-auto">{t.followSettings}</Label>
                                         </div>
                                         <div className="flex items-center gap-3">
                                             <RadioGroupItem value="m4a" id="a-m4a" />
@@ -275,6 +277,7 @@ function DownloadConfigDialog({ selectedFormatFileType }: DownloadConfigDialogPr
 }
 
 export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileType, selectedVideoFormat, selectedAudioFormats, containerRef }: BottomBarProps) {
+    const { t } = useI18n();
     const { startDownload } = useAppContext();
 
     const activeDownloadModeTab = useDownloaderPageStatesStore((state) => state.activeDownloadModeTab);
@@ -300,48 +303,48 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
     const isCombineableAudioSelected = selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 0 && selectedAudioFormats && selectedAudioFormats.length > 0;
     const isMultipleCombineableAudioSelected = selectedCombinableAudioFormats && selectedCombinableAudioFormats.length > 1 && selectedAudioFormats && selectedAudioFormats.length > 1;
 
-    let selectedFormatExtensionMsg = 'Auto - unknown';
+    let selectedFormatExtensionMsg = `${t.statusAuto} - ${t.statusUnknown}`;
     if (activeDownloadModeTab === 'combine') {
         if (downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') {
-            selectedFormatExtensionMsg = `Combined - ${downloadConfiguration.output_format.toUpperCase()}`;
+            selectedFormatExtensionMsg = `${t.statusCombined} - ${downloadConfiguration.output_format.toUpperCase()}`;
         } else if (videoFormat !== 'auto') {
-            selectedFormatExtensionMsg = `Combined - ${videoFormat.toUpperCase()}`;
+            selectedFormatExtensionMsg = `${t.statusCombined} - ${videoFormat.toUpperCase()}`;
         } else if (isCombineableAudioSelected && selectedVideoFormat?.ext) {
             if (isMultipleCombineableAudioSelected) {
-                selectedFormatExtensionMsg = `Combined - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormats.length} Audio`;
+                selectedFormatExtensionMsg = `${t.statusCombined} - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormats.length} ${t.audio}`;
             } else {
-                selectedFormatExtensionMsg = `Combined - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormats[0].ext.toUpperCase()}`;
+                selectedFormatExtensionMsg = `${t.statusCombined} - ${selectedVideoFormat.ext.toUpperCase()} + ${selectedAudioFormats[0].ext.toUpperCase()}`;
             }
         } else {
-            selectedFormatExtensionMsg = `Combined - unknown`;
+            selectedFormatExtensionMsg = `${t.statusCombined} - ${t.statusUnknown}`;
         }
     } else if (selectedFormat?.ext) {
         if ((selectedFormatFileType === 'video+audio' || selectedFormatFileType === 'video') && ((downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') || videoFormat !== 'auto')) {
-            selectedFormatExtensionMsg = `Forced - ${(downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') ? downloadConfiguration.output_format.toUpperCase() : videoFormat.toUpperCase()}`;
+            selectedFormatExtensionMsg = `${t.statusForced} - ${(downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') ? downloadConfiguration.output_format.toUpperCase() : videoFormat.toUpperCase()}`;
         } else if (selectedFormatFileType === 'audio' && ((downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') || audioFormat !== 'auto')) {
-            selectedFormatExtensionMsg = `Forced - ${(downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') ? downloadConfiguration.output_format.toUpperCase() : audioFormat.toUpperCase()}`;
+            selectedFormatExtensionMsg = `${t.statusForced} - ${(downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') ? downloadConfiguration.output_format.toUpperCase() : audioFormat.toUpperCase()}`;
         } else if (selectedFormatFileType === 'unknown' && downloadConfiguration.output_format && downloadConfiguration.output_format !== 'auto') {
-            selectedFormatExtensionMsg = `Forced - ${downloadConfiguration.output_format.toUpperCase()}`;
+            selectedFormatExtensionMsg = `${t.statusForced} - ${downloadConfiguration.output_format.toUpperCase()}`;
         } else {
-            selectedFormatExtensionMsg = `Auto - ${selectedFormat.ext.toUpperCase()}`;
+            selectedFormatExtensionMsg = `${t.statusAuto} - ${selectedFormat.ext.toUpperCase()}`;
         }
     }
 
-    let selectedFormatResolutionMsg = 'unknown';
+    let selectedFormatResolutionMsg = t.statusUnknown;
     let totalTbr = 0;
     if (activeDownloadModeTab === 'combine') {
         if (isCombineableAudioSelected) {
             if (isMultipleCombineableAudioSelected) {
                 const totalAudioTbr = selectedAudioFormats.reduce((acc, format) => acc + (format.tbr ?? 0), 0);
                 totalTbr = (selectedVideoFormat?.tbr ?? 0) + totalAudioTbr;
-                selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + ${formatBitrate(totalAudioTbr)}`;
+                selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? t.statusUnknown} + ${formatBitrate(totalAudioTbr)}`;
             } else {
                 totalTbr = (selectedVideoFormat?.tbr ?? 0) + (selectedAudioFormats && selectedAudioFormats[0].tbr ? selectedAudioFormats[0].tbr : 0);
-                selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + ${selectedAudioFormats && selectedAudioFormats[0].tbr ? formatBitrate(selectedAudioFormats[0].tbr) : 'unknown'}`;
+                selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? t.statusUnknown} + ${selectedAudioFormats && selectedAudioFormats[0].tbr ? formatBitrate(selectedAudioFormats[0].tbr) : t.statusUnknown}`;
             }
         } else {
             totalTbr = selectedVideoFormat?.tbr ?? 0;
-            selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? 'unknown'} + unknown`;
+            selectedFormatResolutionMsg = `${selectedVideoFormat?.resolution ?? t.statusUnknown} + ${t.statusUnknown}`;
         }
     } else if (selectedFormat?.resolution) {
         totalTbr = selectedFormat.tbr ?? 0;
@@ -436,7 +439,7 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
                     )}
                 </div>
                 <div className="flex flex-col gap-1">
-                    <span className="text-sm text-nowrap max-w-120 xl:max-w-200 overflow-hidden text-ellipsis">{videoMetadata._type === 'video' ? videoMetadata.title : videoMetadata._type === 'playlist' ? selectedPlaylistVideos.length === 1 ? videoMetadata.entries[Number(selectedPlaylistVideos[0]) - 1].title : `${selectedPlaylistVideos.length} Items` : 'Unknown' }</span>
+                    <span className="text-sm text-nowrap max-w-120 xl:max-w-200 overflow-hidden text-ellipsis">{videoMetadata._type === 'video' ? videoMetadata.title : videoMetadata._type === 'playlist' ? selectedPlaylistVideos.length === 1 ? videoMetadata.entries[Number(selectedPlaylistVideos[0]) - 1].title : `${selectedPlaylistVideos.length} ${t.items}` : t.unknown }</span>
                     <span className="text-xs text-muted-foreground">{selectedFormatFinalMsg}</span>
                 </div>
             </div>
@@ -479,8 +482,8 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
                         // });
                     } catch (error) {
                         console.error('Download failed to start:', error);
-                        toast.error("Failed to Start Download", {
-                            description: "There was an error initiating the download."
+                        toast.error(t.failedToStartDownload, {
+                            description: t.errorInitiatingDownload
                         });
                     } finally {
                         setIsStartingDownload(false);
@@ -491,10 +494,10 @@ export function BottomBar({ videoMetadata, selectedFormat, selectedFormatFileTyp
                     {isStartingDownload ? (
                         <>
                             <Loader2 className="h-4 w-4 animate-spin" />
-                            Starting Download
+                            {t.startingDownload}
                         </>
                     ) : (
-                        'Start Download'
+                        t.startDownload
                     )}
                 </Button>
             </div>

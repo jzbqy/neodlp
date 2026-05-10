@@ -9,10 +9,12 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { CompletedDownloads } from "@/components/pages/library/completedDownloads";
 import { IncompleteDownloads } from "@/components/pages/library/incompleteDownloads";
+import { useI18n } from "@/i18n/i18nProvider";
 
 export default function LibraryPage() {
     const activeTab = useLibraryPageStatesStore(state => state.activeTab);
     const setActiveTab = useLibraryPageStatesStore(state => state.setActiveTab);
+    const { t } = useI18n();
 
     const downloadStates = useDownloadStatesStore(state => state.downloadStates);
     const setIsPausingDownload = useDownloadActionStatesStore(state => state.setIsPausingDownload);
@@ -38,33 +40,33 @@ export default function LibraryPage() {
                     await pauseDownload(state);
                 } catch (e) {
                     console.error(e);
-                    toast.error("Failed to stop download", {
-                        description: `An error occurred while trying to stop the download for ${state.title}.`,
+                    toast.error(t.failedToStopDownload, {
+                        description: `${t.failedToStopDownloadDesc} ${state.title}.`,
                     });
                 } finally {
                     setIsPausingDownload(state.download_id, false);
                 }
             }
             if (ongoingDownloads.length === 0) {
-                toast.success("Stopped ongoing downloads", {
-                    description: "All ongoing downloads have been stopped successfully.",
+                toast.success(t.stoppedOngoingDownloads, {
+                    description: t.stoppedOngoingDownloadsDesc,
                 });
             }
         } else {
-            toast.info("No ongoing downloads", {
-                description: "There are no ongoing downloads to stop.",
+            toast.info(t.noOngoingDownloads, {
+                description: t.noOngoingDownloadsDesc,
             });
         }
     }
 
     return (
         <div className="container mx-auto p-4 space-y-4">
-            <Heading title="Library" description="Manage all your downloads in one place" />
+            <Heading title={t.libraryTitle} description={t.libraryDescription} />
             <Tabs value={activeTab} onValueChange={setActiveTab}>
                 <div className="w-full flex items-center justify-between mb-4">
                     <TabsList>
-                        <TabsTrigger value="completed">Completed {completedDownloads.length > 0 && (`(${completedDownloads.length})`)}</TabsTrigger>
-                        <TabsTrigger value="incomplete">Incomplete {(incompleteDownloads.length > 0 && ongoingDownloads.length <= 0) && (`(${incompleteDownloads.length})`)} {ongoingDownloads.length > 0 && (<Badge className="h-4 min-w-4 rounded-full px-1 font-mono tabular-nums ml-1.5 mt-0.5">{ongoingDownloads.length}</Badge>)}</TabsTrigger>
+                        <TabsTrigger value="completed">{t.completedDownloads} {completedDownloads.length > 0 && (`(${completedDownloads.length})`)}</TabsTrigger>
+                        <TabsTrigger value="incomplete">{t.incompleteDownloads} {(incompleteDownloads.length > 0 && ongoingDownloads.length <= 0) && (`(${incompleteDownloads.length})`)} {ongoingDownloads.length > 0 && (<Badge className="h-4 min-w-4 rounded-full px-1 font-mono tabular-nums ml-1.5 mt-0.5">{ongoingDownloads.length}</Badge>)}</TabsTrigger>
                     </TabsList>
                     <AlertDialog>
                         <AlertDialogTrigger asChild>
@@ -75,21 +77,21 @@ export default function LibraryPage() {
                             disabled={ongoingDownloads.length <= 0}
                             >
                                 <Square className="h-4 w-4" />
-                                Stop
+                                {t.stop}
                             </Button>
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                             <AlertDialogHeader>
-                                <AlertDialogTitle>Stop all ongoing downloads?</AlertDialogTitle>
+                                <AlertDialogTitle>{t.stopAllOngoingDownloads}</AlertDialogTitle>
                                 <AlertDialogDescription>
-                                    Are you sure you want to stop all ongoing downloads? This will pause all downloads including the download queue.
+                                    {t.stopAllOngoingDownloadsDesc}
                                 </AlertDialogDescription>
                             </AlertDialogHeader>
                             <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
                                 <AlertDialogAction
                                 onClick={() => stopOngoingDownloads()}
-                                >Stop</AlertDialogAction>
+                                >{t.stop}</AlertDialogAction>
                             </AlertDialogFooter>
                         </AlertDialogContent>
                     </AlertDialog>
