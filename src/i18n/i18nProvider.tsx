@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Language, Translation, translations } from './translations';
 import { useSettingsPageStatesStore } from '../services/store';
 
@@ -14,15 +14,22 @@ interface I18nProviderProps {
   children: ReactNode;
 }
 
+// Add language property to settings type (we'll use type assertion)
+type SettingsWithLanguage = {
+  language?: Language;
+};
+
 export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
-  // Try to get saved language from settings or use default
   const settings = useSettingsPageStatesStore(state => state.settings);
   const setSettings = useSettingsPageStatesStore(state => state.setSettingsKey);
-  
-  // Check if we have a saved language in settings (we'll add this field)
-  // For now, default to English or detect browser language
+
   const [language, setLanguageState] = useState<Language>(() => {
-    // Try to detect browser language
+    // First try to get from settings if available
+    const settingsWithLang = settings as SettingsWithLanguage;
+    if (settingsWithLang.language) {
+      return settingsWithLang.language;
+    }
+    // Then try browser language
     const browserLang = navigator.language;
     if (browserLang.startsWith('zh')) {
       return 'zh-CN';
@@ -32,8 +39,13 @@ export const I18nProvider: React.FC<I18nProviderProps> = ({ children }) => {
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    // In a real implementation, we would save this to settings
-    // For now, we'll just update the state
+    try {
+      // Save to settings (we use type assertion since language might not be in the type)
+      setSettings('language' as any, lang);
+    } catch (e) {
+      // If setting doesn't exist, just ignore
+      console.log('Could not save language to settings', e);
+    }
   };
 
   const t = translations[language];
